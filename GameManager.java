@@ -2,6 +2,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 
 public class GameManager {
     final int WIDTH = 360;
@@ -32,7 +33,9 @@ public class GameManager {
         g2.setStroke(new BasicStroke(4f));
         g2.drawRect(x, y, 200, 500);
         g2.setFont(new Font("Arial", Font.PLAIN, 20));
-        g2.drawString("Preview", x + 60, y + 60);
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.drawString("Preview", x + 70, y + 30);
+
 
     }
 
