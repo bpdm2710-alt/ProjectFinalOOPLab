@@ -1,5 +1,6 @@
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 
 public class GameManager {
@@ -26,9 +27,13 @@ public class GameManager {
         g2.drawRect(left_x-8, top_y-8, WIDTH+16, HEIGHT+16);
 
         int x = right_x + 100;
-        int y = bottom_y - 100;
+        int y = bottom_y - 550;
         g2.setColor(Color.white);
         g2.setStroke(new BasicStroke(4f));
+        g2.drawRect(x, y, 200, 500);
+        g2.setFont(new Font("Arial", Font.PLAIN, 20));
+        g2.drawString("Preview", x + 60, y + 60);
+
     }
 
 }
