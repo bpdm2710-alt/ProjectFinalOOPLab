@@ -31,7 +31,7 @@ public class Mino_I extends Mino {
         tempB[3].x = b[0].x + Block.SIZE * 2;
         tempB[3].y = b[0].y;
 
-        UpdateXY(1);
+        updateXY(1);
     }
     public void getDirection2 () {
         // o
@@ -47,6 +47,6 @@ public class Mino_I extends Mino {
         tempB[3].x = b[0].x;
         tempB[3].y = b[0].y + Block.SIZE * 2;
         
-        UpdateXY(2);
+        updateXY(2);
     }
 }
