@@ -2,8 +2,8 @@ package mino;
 import java.awt.Color;
 
 public class Mino_T extends Mino {
-    // o o o
     //   o
+    // o o o
 
     public Mino_T(){
         create (Color.PINK);
@@ -20,7 +20,7 @@ public class Mino_T extends Mino {
     }
     public void getDirection1() {
         //   o
-        // o o o  
+        // o o o
         tempB[0].x = b[0].x;
         tempB[0].y = b[0].y;
         tempB[1].x = b[0].x;
