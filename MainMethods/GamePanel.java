@@ -1,3 +1,4 @@
+package MainMethods;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -16,6 +17,9 @@ public class GamePanel extends JPanel implements Runnable{
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setBackground(Color.black);
         this.setLayout(null);
+
+        this.addKeyListener(new KeyHandler());
+        this.setFocusable(true);
 
         gameManager = new GameManager();
     }
