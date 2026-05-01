@@ -31,7 +31,7 @@ public class GameManager {
         MINO_START_X = left_x + WIDTH / 2 - Block.SIZE;
         MINO_START_Y = top_y + Block.SIZE;
 
-        currentMino = new MinoL1();
+        currentMino = new MinoZ2();
         currentMino.setXY(MINO_START_X, MINO_START_Y);
     }
     public void update (){
