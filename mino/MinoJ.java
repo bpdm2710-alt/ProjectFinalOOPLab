@@ -1,12 +1,12 @@
 package mino;
 import java.awt.Color;
 
-public class MinoL2 extends Mino {
+public class MinoJ extends Mino {
     //   o
     //   o
     // o o
 
-    public MinoL2(){
+    public MinoJ(){
         create(Color.blue);
     }
 
