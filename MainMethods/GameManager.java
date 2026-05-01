@@ -70,6 +70,13 @@ public class GameManager {
         if(currentMino != null){
             currentMino.draw(g2);
         }
+        
+        g2.setColor(Color.yellow);
+        g2.setFont(g2.getFont().deriveFont(50f));
+        if (KeyHandler.PausedGame){
+            g2.drawString("PAUSED", GamePanel.WIDTH / 2 - 100, GamePanel.HEIGHT / 2);
+            g2.drawString("Press P again", GamePanel.WIDTH / 2 - 150, GamePanel.HEIGHT / 2 + 60);
+        }
     }
 
 }

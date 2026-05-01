@@ -28,7 +28,9 @@ public class GamePanel extends JPanel implements Runnable{
         gameThread.start();
     }
     private void update(){
-        gameManager.update();
+        if (!KeyHandler.PausedGame){
+            gameManager.update();
+        }
     }
     public void paintComponent(Graphics g){
         super.paintComponent(g);
