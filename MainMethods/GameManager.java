@@ -39,13 +39,13 @@ public class GameManager {
         Mino mino = null;
         int i = new Random().nextInt(7);
         switch(i){
-            case 0: mino = new MinoL1(); break;
-            case 1: mino = new MinoL2(); break;
+            case 0: mino = new MinoL(); break;
+            case 1: mino = new MinoJ(); break;
             case 2: mino = new MinoBar(); break;
             case 3: mino = new MinoSquare(); break;
-            case 4: mino = new MinoZ1(); break;
+            case 4: mino = new MinoZ(); break;
             case 5: mino = new MinoT(); break;
-            case 6: mino = new MinoZ2(); break;
+            case 6: mino = new MinoS(); break;
         }
         return mino;
     }
