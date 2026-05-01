@@ -1,12 +1,12 @@
 package mino;
 import java.awt.Color;
 
-public class MinoBar extends Mino {
+public class Mino_I extends Mino {
     // o
     // o 
     // o
     // o
-    public MinoBar(){
+    public Mino_I(){
         create(Color.cyan);
     }
     public void setXY(int x, int y){

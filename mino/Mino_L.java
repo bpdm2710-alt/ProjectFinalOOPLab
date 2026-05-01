@@ -2,8 +2,8 @@ package mino;
 
 import java.awt.Color;
 
-public class MinoL extends Mino {
-    public MinoL(){
+public class Mino_L extends Mino {
+    public Mino_L(){
         create(Color.orange);
     }
     public void setXY(int x, int y){

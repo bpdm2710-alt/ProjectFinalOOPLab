@@ -1,11 +1,11 @@
 package mino;
 import java.awt.Color;
 
-public class MinoT extends Mino {
+public class Mino_T extends Mino {
     // o o o
     //   o
 
-    public MinoT(){
+    public Mino_T(){
         create (Color.PINK);
     }
     public void setXY(int x, int y){
