@@ -49,4 +49,10 @@ public class Mino_I extends Mino {
         
         UpdateXY(2);
     }
+    public void getDirection3() {
+        getDirection1();
+    }
+    public void getDirection4() {
+        getDirection2();
+    }
 }
