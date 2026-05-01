@@ -11,6 +11,8 @@ public class Mino {
     public Block tempB[] = new Block[4];
 
     int autoDropCounter = 0;
+    public int direction = 1; // 4 directions
+
 
     public void create (Color c){
         b[0] = new Block(c);
@@ -23,7 +25,21 @@ public class Mino {
         tempB[3] = new Block(c);
     }
     public void setXY(int x, int y){}
-    public void updateXY(int direction){}
+    public void updateXY(int direction){
+        this.direction = direction;
+        b[0].x = temp[0].x;
+        b[0].y = temp[0].y;
+        b[1].x = temp[1].x;
+        b[1].y = temp[1].y;
+        b[2].x = temp[2].x;
+        b[2].y = temp[2].y;
+        b[3].x = temp[3].x;
+        b[3].y = temp[3].y;
+    }
+    public void getDirection1 () {}
+    public void getDirection2 () {}
+    public void getDirection3 () {}
+    public void getDirection4 () {}
     public void update (){
 
         if (KeyHandler.leftPressed){
@@ -48,7 +64,21 @@ public class Mino {
             KeyHandler.downPressed = false;
         }
         if (KeyHandler.UpPressed) {
-            
+            switch (direction) {
+                case 1:
+                    getDirection2();
+                    break;
+                case 2:
+                    getDirection3();
+                    break;
+                case 3:
+                    getDirection4();
+                    break;
+                case 4:
+                    getDirection1();
+                    break;
+            }
+            KeyHandler.UpPressed = false;
         }
 
         autoDropCounter++;
