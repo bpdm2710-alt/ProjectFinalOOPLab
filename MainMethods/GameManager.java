@@ -32,23 +32,23 @@ public class GameManager {
         MINO_START_X = left_x + WIDTH / 2 - Block.SIZE;
         MINO_START_Y = top_y + Block.SIZE;
 
-        currentMino = new Mino_L();
+        currentMino = getRandomMino();
         currentMino.setXY(MINO_START_X, MINO_START_Y);
     }
-    // private Mino getRandomMino(){
-    //     Mino mino = null;
-    //     int i = new Random().nextInt(7);
-    //     switch(i){
-    //         case 0: mino = new Mino_L(); break;
-    //         case 1: mino = new Mino_J(); break;
-    //         case 2: mino = new Mino_I(); break;
-    //         case 3: mino = new Mino_O(); break;
-    //         case 4: mino = new Mino_Z(); break;
-    //         case 5: mino = new Mino_T(); break;
-    //         case 6: mino = new Mino_S(); break;
-    //     }
-    //     return mino;
-    // }
+    private Mino getRandomMino(){
+        Mino mino = null;
+        int i = new Random().nextInt(7);
+        switch(i){
+            case 0: mino = new Mino_L(); break;
+            case 1: mino = new Mino_J(); break;
+            case 2: mino = new Mino_I(); break;
+            case 3: mino = new Mino_O(); break;
+            case 4: mino = new Mino_Z(); break;
+            case 5: mino = new Mino_T(); break;
+            case 6: mino = new Mino_S(); break;
+        }
+        return mino;
+    }
     public void update (){
         currentMino.update();
     }

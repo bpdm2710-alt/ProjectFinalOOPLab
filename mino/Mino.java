@@ -12,6 +12,7 @@ public class Mino {
     boolean leftCollision = false;
     boolean rightCollision = false;
     boolean downCollision = false;
+    public boolean activeMino = true;
 
     int autoDropCounter = 0;
     public int direction = 1; // 4 directions
@@ -131,13 +132,18 @@ public class Mino {
             KeyHandler.UpPressed = false;
         }
 
-        autoDropCounter++;
-        if (autoDropCounter == GameManager.dropInterval){
+        if(downCollision){
+            activeMino = false;
+        }
+        else {
+            autoDropCounter++;
+            if (autoDropCounter == GameManager.dropInterval){
             b[0].y += Block.SIZE;
             b[1].y += Block.SIZE;
             b[2].y += Block.SIZE;
             b[3].y += Block.SIZE;
             autoDropCounter = 0;
+            }
         }
     }
     public void draw (Graphics2D g2){
