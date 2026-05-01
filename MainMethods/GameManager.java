@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.util.Random;
 
 import mino.*;
 
@@ -31,8 +32,22 @@ public class GameManager {
         MINO_START_X = left_x + WIDTH / 2 - Block.SIZE;
         MINO_START_Y = top_y + Block.SIZE;
 
-        currentMino = new MinoZ2();
+        currentMino = getRandomMino();
         currentMino.setXY(MINO_START_X, MINO_START_Y);
+    }
+    private Mino getRandomMino(){
+        Mino mino = null;
+        int i = new Random().nextInt(7);
+        switch(i){
+            case 0: mino = new MinoL1(); break;
+            case 1: mino = new MinoL2(); break;
+            case 2: mino = new MinoBar(); break;
+            case 3: mino = new MinoSquare(); break;
+            case 4: mino = new MinoZ1(); break;
+            case 5: mino = new MinoT(); break;
+            case 6: mino = new MinoZ2(); break;
+        }
+        return mino;
     }
     public void update (){
         currentMino.update();
