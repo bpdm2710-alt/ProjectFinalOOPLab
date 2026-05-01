@@ -29,7 +29,7 @@ public class Mino {
     }
     public void setXY(int x, int y){}
     public void updateXY(int direction){
-        checkRotationCollision();
+        checkMovementCollision();
         if (!leftCollision && !rightCollision && !downCollision){
             this.direction = direction;
             b[0].x = tempB[0].x;

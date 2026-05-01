@@ -8,14 +8,14 @@ public class Mino_S extends Mino {
         create(Color.GREEN);
     }
     public void setXY(int x, int y){
-        tempB[0].x = x;
-        tempB[0].y = y;
-        tempB[1].x = x + Block.SIZE;
-        tempB[1].y = y;
-        tempB[2].x = x - Block.SIZE;
-        tempB[2].y = y + Block.SIZE;
-        tempB[3].x = x;
-        tempB[3].y = y + Block.SIZE;
+        b[0].x = x;
+        b[0].y = y;
+        b[1].x = x + Block.SIZE;
+        b[1].y = y;
+        b[2].x = x - Block.SIZE;
+        b[2].y = y + Block.SIZE;
+        b[3].x = x;
+        b[3].y = y + Block.SIZE;
     }
     public void getDirection1() {
         //  o o

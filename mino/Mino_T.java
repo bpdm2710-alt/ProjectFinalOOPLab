@@ -6,7 +6,7 @@ public class Mino_T extends Mino {
     // o o o
 
     public Mino_T(){
-        create (Color.PINK);
+        create (Color.MAGENTA);
     }
     public void setXY(int x, int y){
         b[0].x = x;
