@@ -35,8 +35,6 @@ public class GameManager {
         g2.setFont(new Font("Arial", Font.PLAIN, 20));
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.drawString("Preview", x + 70, y + 30);
-
-
     }
 
 }
