@@ -6,9 +6,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 
-import mino.Block;
-import mino.Mino;
-import mino.MinoL1;
+import mino.*;
 
 public class GameManager {
     final int WIDTH = 360;

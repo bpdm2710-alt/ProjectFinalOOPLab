@@ -2,8 +2,9 @@ package mino;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-
+import java.awt.RenderingHints.Key;
 import MainMethods.GameManager;
+import MainMethods.KeyHandler;
 
 public class Mino {
     public Block b[] = new Block[4];
@@ -24,6 +25,32 @@ public class Mino {
     public void setXY(int x, int y){}
     public void updateXY(int direction){}
     public void update (){
+
+        if (KeyHandler.leftPressed){
+            b[0].x -= Block.SIZE;
+            b[1].x -= Block.SIZE;
+            b[2].x -= Block.SIZE;
+            b[3].x -= Block.SIZE;
+            KeyHandler.leftPressed = false;
+        }
+        if(KeyHandler.rightPressed){
+            b[0].x += Block.SIZE;
+            b[1].x += Block.SIZE;
+            b[2].x += Block.SIZE;
+            b[3].x += Block.SIZE;
+            KeyHandler.rightPressed = false;
+        }
+        if(KeyHandler.downPressed){
+            b[0].y += Block.SIZE;
+            b[1].y += Block.SIZE;
+            b[2].y += Block.SIZE;
+            b[3].y += Block.SIZE;
+            KeyHandler.downPressed = false;
+        }
+        if (KeyHandler.UpPressed) {
+            
+        }
+
         autoDropCounter++;
         if (autoDropCounter == GameManager.dropInterval){
             b[0].y += Block.SIZE;
