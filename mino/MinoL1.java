@@ -23,28 +23,28 @@ public class MinoL1 extends Mino {
         // o
         // o
         // o o
-        temp[0].x = b[0].x;
-        temp[0].y = b[0].y;
-        temp[1].x = b[0].x;
-        temp[1].y = b[0].y - Block.SIZE;
-        temp[2].x = b[0].x;
-        temp[2].y = b[0].y + Block.SIZE;
-        temp[3].x = b[0].x + Block.SIZE;
-        temp[3].y = b[0].y + Block.SIZE;
+        tempB[0].x = b[0].x;
+        tempB[0].y = b[0].y;
+        tempB[1].x = b[0].x;
+        tempB[1].y = b[0].y - Block.SIZE;
+        tempB[2].x = b[0].x;
+        tempB[2].y = b[0].y + Block.SIZE;
+        tempB[3].x = b[0].x + Block.SIZE;
+        tempB[3].y = b[0].y + Block.SIZE;
 
         updateXY(1);
     }
     public void getDirection2 () {
         // o o o
         // o
-        temp[0].x = b[0].x;
-        temp[0].y = b[0].y;
-        temp[1].x = b[0].x + Block.SIZE;
-        temp[1].y = b[0].y;
-        temp[2].x = b[0].x - Block.SIZE;
-        temp[2].y = b[0].y;
-        temp[3].x = b[0].x - Block.SIZE;
-        temp[3].y = b[0].y + Block.SIZE;
+        tempB[0].x = b[0].x;
+        tempB[0].y = b[0].y;
+        tempB[1].x = b[0].x + Block.SIZE;
+        tempB[1].y = b[0].y;
+        tempB[2].x = b[0].x - Block.SIZE;
+        tempB[2].y = b[0].y;
+        tempB[3].x = b[0].x - Block.SIZE;
+        tempB[3].y = b[0].y + Block.SIZE;
 
         updateXY(2);
     }
@@ -52,28 +52,28 @@ public class MinoL1 extends Mino {
         // o o
         //   o
         //   o
-        temp[0].x = b[0].x;
-        temp[0].y = b[0].y;
-        temp[1].x = b[0].x;
-        temp[1].y = b[0].y + Block.SIZE;
-        temp[2].x = b[0].x;
-        temp[2].y = b[0].y - Block.SIZE;
-        temp[3].x = b[0].x - Block.SIZE;
-        temp[3].y = b[0].y - Block.SIZE;
+        tempB[0].x = b[0].x;
+        tempB[0].y = b[0].y;
+        tempB[1].x = b[0].x;
+        tempB[1].y = b[0].y + Block.SIZE;
+        tempB[2].x = b[0].x;
+        tempB[2].y = b[0].y - Block.SIZE;
+        tempB[3].x = b[0].x - Block.SIZE;
+        tempB[3].y = b[0].y - Block.SIZE;
 
         updateXY(3);
     }
     public void getDirection4 () {
         //     o
         // o o o
-        temp[0].x = b[0].x;
-        temp[0].y = b[0].y;
-        temp[1].x = b[0].x - Block.SIZE;
-        temp[1].y = b[0].y;
-        temp[2].x = b[0].x + Block.SIZE;
-        temp[2].y = b[0].y;
-        temp[3].x = b[0].x + Block.SIZE;
-        temp[3].y = b[0].y - Block.SIZE;
+        tempB[0].x = b[0].x;
+        tempB[0].y = b[0].y;
+        tempB[1].x = b[0].x - Block.SIZE;
+        tempB[1].y = b[0].y;
+        tempB[2].x = b[0].x + Block.SIZE;
+        tempB[2].y = b[0].y;
+        tempB[3].x = b[0].x + Block.SIZE;
+        tempB[3].y = b[0].y - Block.SIZE;
 
         updateXY(4);
     }
