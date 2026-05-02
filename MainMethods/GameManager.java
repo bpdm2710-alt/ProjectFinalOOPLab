@@ -28,6 +28,7 @@ public class GameManager {
     public static ArrayList<Block> staticBlocks = new ArrayList<>();
 
     public static int dropInterval = 60;
+    boolean gameOver;
 
     boolean effectCounterOn;
     int effectCounter;
@@ -69,6 +70,10 @@ public class GameManager {
             staticBlocks.add(currentMino.b[1]);
             staticBlocks.add(currentMino.b[2]);
             staticBlocks.add(currentMino.b[3]);
+
+            if (currentMino.b[0].x == MINO_START_X && currentMino.b[0].y == MINO_START_Y) {
+                gameOver = true;
+            }
 
             currentMino.deactivating = false;
 
@@ -133,7 +138,7 @@ public class GameManager {
         g2.drawRect(x, y, 200, 500);
         g2.setFont(new Font("Arial", Font.PLAIN, 20));
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2.drawString("Preview", x + 70, y + 30);
+        g2.drawString("NEXT", x + 70, y + 30);
 
         //draw current mino
         if(currentMino != null){
@@ -168,10 +173,15 @@ public class GameManager {
         //draw pause
         g2.setColor(Color.yellow);
         g2.setFont(g2.getFont().deriveFont(50f));
-        if (KeyHandler.PausedGame){
+        if (gameOver) {
+            g2.drawString("GAME OVER", GamePanel.WIDTH / 2 - 150, GamePanel.HEIGHT / 2);
+            g2.setFont(g2.getFont().deriveFont(30f));
+        }
+        else if (KeyHandler.PausedGame){
             g2.drawString("PAUSED", GamePanel.WIDTH / 2 - 100, GamePanel.HEIGHT / 2);
             g2.drawString("Press P again", GamePanel.WIDTH / 2 - 150, GamePanel.HEIGHT / 2 + 60);
         }
-    }
 
+        // For Left side info
+    }
 }

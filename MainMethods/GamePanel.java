@@ -28,7 +28,7 @@ public class GamePanel extends JPanel implements Runnable{
         gameThread.start();
     }
     private void update(){
-        if (!KeyHandler.PausedGame){
+        if (!KeyHandler.PausedGame == false && !gameManager.gameOver) {
             gameManager.update();
         }
     }
