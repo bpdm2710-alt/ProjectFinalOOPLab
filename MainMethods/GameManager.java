@@ -76,8 +76,40 @@ public class GameManager {
             currentMino.setXY(MINO_START_X, MINO_START_Y);
             nextMino = getRandomMino();
             nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
+
+            checkDelete();
         }else {
             currentMino.update();
+        }
+    }
+    public void checkDelete(){
+        int x = left_x;
+        int y = top_y;
+        int blockCount = 0;
+
+        for (int i = 0; i < staticBlocks.size(); i++){
+            if (staticBlocks.get(i).x == x && staticBlocks.get(i).y == y){
+                blockCount++;
+            }
+        }
+
+        while (x < right_x && y < bottom_y){
+            x += Block.SIZE;
+
+            if (x == right_x){
+                if (blockCount == 10){
+                    for (int i = staticBlocks.size() - 1; i > -1; i--){
+                        if (staticBlocks.get(i).y == y){
+                            staticBlocks.remove(i);
+                        }
+                    }
+                }
+
+
+                blockCount = 0;
+                x = left_x;
+                y += Block.SIZE;
+            }
         }
     }
 
