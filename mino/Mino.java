@@ -2,7 +2,6 @@ package mino;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints.Key;
 import MainMethods.GameManager;
 import MainMethods.KeyHandler;
 
