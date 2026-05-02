@@ -35,7 +35,7 @@ public class GamePanel extends JPanel implements Runnable{
     }
 
     public static void togglePause(){
-        if (instance == null || instance.gameManager.isGameOver()) {
+        if (instance == null || instance.gameManager.getState() == GameState.GAME_OVER) {
             return;
         }
 
@@ -57,10 +57,12 @@ public class GamePanel extends JPanel implements Runnable{
     }
 
     private void update(){
-        if (gameManager.isGameOver() && KeyHandler.restartPressed) {
+        // Only allow restart if game is explicitly in GAME_OVER state
+        // AND R key was just pressed (not held from before)
+        if (gameManager.getState() == GameState.GAME_OVER && KeyHandler.restartPressed) {
             restartGame();
-            KeyHandler.resetTransientInput();
             KeyHandler.restartPressed = false;
+            KeyHandler.resetTransientInput();
         }
 
         if (gameManager.getState() == GameState.PLAYING) {

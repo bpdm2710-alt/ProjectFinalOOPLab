@@ -36,7 +36,6 @@ public class GameManager {
     public static ArrayList<Block> staticBlocks = new ArrayList<>();
 
     public static int dropInterval = 60;
-    boolean gameOver;
 
     // Line clear effect - shorter duration for cleaner animation
     boolean effectCounterOn;
@@ -101,7 +100,6 @@ public class GameManager {
         holdMinoType = -1;
         holdMino = null;
         holdUsedInTurn = false;
-        gameOver = false;
         state = GameState.PLAYING;
 
         // Reinitialize preview queue
@@ -150,7 +148,6 @@ public class GameManager {
             staticBlocks.add(currentMino.b[3]);
 
             if (isSpawnBlocked()) {
-                gameOver = true;
                 state = GameState.GAME_OVER;
                 GamePanel.music.stop();
                 GamePanel.effect.playEffect(2);
@@ -239,7 +236,8 @@ public class GameManager {
         g2.drawRect(previewX, previewY, 180, 400);
         g2.setFont(new Font("Arial", Font.BOLD, 18));
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2.drawString("NEXT", previewX + 55, previewY + 28);
+        // Center "NEXT" text (box width 180, so center at +90)
+        g2.drawString("NEXT", previewX + 65, previewY + 28);
 
         // Hold area
         int holdX = left_x - 220;
@@ -248,13 +246,15 @@ public class GameManager {
         g2.setStroke(new BasicStroke(4f));
         g2.drawRect(holdX, holdY, 180, 180);
         g2.setFont(new Font("Arial", Font.BOLD, 18));
-        g2.drawString("HOLD", holdX + 50, holdY + 28);
+        // Center "HOLD" text (box width 180, so center at +90)
+        g2.drawString("HOLD", holdX + 60, holdY + 28);
 
-        // Draw Scores
+        // Draw Scores - better positioning
         g2.setFont(new Font("Arial", Font.PLAIN, 16));
-        g2.drawString("SCORE: " + score, previewX, previewY + 420);
-        g2.drawString("LEVEL: " + level, holdX, holdY + 210);
-        g2.drawString("LINES: " + lines, holdX, holdY + 240);
+        g2.setColor(Color.white);
+        g2.drawString("SCORE: " + score, previewX + 5, previewY + 425);
+        g2.drawString("LEVEL: " + level, holdX + 5, holdY + 210);
+        g2.drawString("LINES: " + lines, holdX + 5, holdY + 240);
 
         // Draw current mino and ghost
         if(currentMino != null){
@@ -307,16 +307,38 @@ public class GameManager {
 
         // Draw pause/game over screen
         g2.setColor(Color.yellow);
-        g2.setFont(g2.getFont().deriveFont(50f));
-        if (gameOver) {
-            g2.drawString("GAME OVER", GamePanel.WIDTH / 2 - 180, GamePanel.HEIGHT / 2 - 20);
-            g2.setFont(g2.getFont().deriveFont(30f));
-            g2.drawString("Press R to Restart", GamePanel.WIDTH / 2 - 160, GamePanel.HEIGHT / 2 + 50);
+        
+        if (state == GameState.GAME_OVER) {
+            // Semi-transparent overlay
+            g2.setColor(new Color(0, 0, 0, 150));
+            g2.fillRect(0, 0, GamePanel.WIDTH, GamePanel.HEIGHT);
+            
+            g2.setColor(Color.yellow);
+            g2.setFont(g2.getFont().deriveFont(60f));
+            String gameOverText = "GAME OVER";
+            int textWidth = g2.getFontMetrics().stringWidth(gameOverText);
+            g2.drawString(gameOverText, GamePanel.WIDTH / 2 - textWidth / 2, GamePanel.HEIGHT / 2 - 40);
+            
+            g2.setFont(g2.getFont().deriveFont(32f));
+            String restartText = "Press R to Restart";
+            int restartWidth = g2.getFontMetrics().stringWidth(restartText);
+            g2.drawString(restartText, GamePanel.WIDTH / 2 - restartWidth / 2, GamePanel.HEIGHT / 2 + 60);
         }
         else if (state == GameState.PAUSED){
-            g2.drawString("PAUSED", GamePanel.WIDTH / 2 - 120, GamePanel.HEIGHT / 2 - 20);
-            g2.setFont(g2.getFont().deriveFont(25f));
-            g2.drawString("Press P to Resume", GamePanel.WIDTH / 2 - 150, GamePanel.HEIGHT / 2 + 50);
+            // Semi-transparent overlay
+            g2.setColor(new Color(0, 0, 0, 100));
+            g2.fillRect(0, 0, GamePanel.WIDTH, GamePanel.HEIGHT);
+            
+            g2.setColor(Color.yellow);
+            g2.setFont(g2.getFont().deriveFont(60f));
+            String pausedText = "PAUSED";
+            int pausedWidth = g2.getFontMetrics().stringWidth(pausedText);
+            g2.drawString(pausedText, GamePanel.WIDTH / 2 - pausedWidth / 2, GamePanel.HEIGHT / 2 - 40);
+            
+            g2.setFont(g2.getFont().deriveFont(32f));
+            String resumeText = "Press P to Resume";
+            int resumeWidth = g2.getFontMetrics().stringWidth(resumeText);
+            g2.drawString(resumeText, GamePanel.WIDTH / 2 - resumeWidth / 2, GamePanel.HEIGHT / 2 + 60);
         }
     }
     
@@ -345,7 +367,7 @@ public class GameManager {
     }
 
     public boolean isGameOver() {
-        return gameOver;
+        return state == GameState.GAME_OVER;
     }
 
     private void spawnNextMino() {
