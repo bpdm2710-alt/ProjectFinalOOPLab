@@ -94,8 +94,12 @@ public class GameManager {
                 blockCount++;
             }
         }
-
+        
         if (blockCount == 12) {
+
+            effectCounterOn = true;
+            effectY.add(y);
+
             // Remove the full row
             for (int i = staticBlocks.size() - 1; i > -1; i--) {
                 if (staticBlocks.get(i).y == y) {
@@ -144,6 +148,23 @@ public class GameManager {
             staticBlocks.get(i).draw(g2);
         }
         
+        // draw effect
+        if (effectCounterOn) {
+            effectCounter++;
+            g2.setColor(Color.yellow);
+            g2.setStroke(new BasicStroke(4f));
+            for (int i = 0; i < effectY.size(); i++) {
+                int yEffect = effectY.get(i);
+                g2.drawLine(left_x, yEffect, right_x, yEffect);
+                g2.fillRect(left_x, effectY.get(i), WIDTH, Block.SIZE);
+            }
+            if (effectCounter > 30) {
+                effectCounter = 0;
+                effectCounterOn = false;
+                effectY.clear();
+            }
+        }
+
         //draw pause
         g2.setColor(Color.yellow);
         g2.setFont(g2.getFont().deriveFont(50f));
