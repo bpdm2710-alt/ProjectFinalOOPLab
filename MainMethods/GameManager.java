@@ -78,39 +78,38 @@ public class GameManager {
             currentMino.update();
         }
     }
-    public void checkDelete(){
-        int x = left_x;
-        int y = top_y;
+    public void checkDelete() {
+    int y = top_y;
+
+    while (y < bottom_y) {
         int blockCount = 0;
 
-        for (int i = 0; i < staticBlocks.size(); i++){
-            if (staticBlocks.get(i).x == x && staticBlocks.get(i).y == y){
+        // ✅ Count all blocks in this row
+        for (int i = 0; i < staticBlocks.size(); i++) {
+            if (staticBlocks.get(i).y == y) {
                 blockCount++;
             }
         }
 
-        while (x < right_x && y < bottom_y){
-            x += Block.SIZE;
-
-            if (x == right_x){
-                if (blockCount == 10){
-                    for (int i = staticBlocks.size() - 1; i > -1; i--){
-                        if (staticBlocks.get(i).y == y){
-                            staticBlocks.remove(i);
-                        }
-                    }
-                    for (int i = 0; i < staticBlocks.size();i++){
-                        if (staticBlocks.get(i).y < y){
-                            staticBlocks.get(i).y += Block.SIZE;
-                        }
-                    }
+        if (blockCount == 12) {
+            // Remove the full row
+            for (int i = staticBlocks.size() - 1; i > -1; i--) {
+                if (staticBlocks.get(i).y == y) {
+                    staticBlocks.remove(i);
                 }
-                blockCount = 0;
-                x = left_x;
-                y += Block.SIZE;
             }
+            // Drop blocks above down
+            for (int i = 0; i < staticBlocks.size(); i++) {
+                if (staticBlocks.get(i).y < y) {
+                    staticBlocks.get(i).y += Block.SIZE;
+                }
+            }
+            // ✅ Don't advance y — recheck same row after blocks drop
+        } else {
+            y += Block.SIZE;
         }
     }
+}
 
     public void draw(Graphics2D g2){
         //Main area
