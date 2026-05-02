@@ -42,6 +42,7 @@ public class GameManager {
     int holdMinoType = -1;
     Mino holdMino;
     boolean holdUsedInTurn;
+    private GameState state = GameState.PLAYING;
 
     private final ScoringStrategy scoringStrategy = new GuidelineScoring();
 
@@ -69,6 +70,41 @@ public class GameManager {
         nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
     }
 
+    public void restartGame() {
+        dropInterval = 60;
+        staticBlocks.clear();
+        effectY.clear();
+        effectCounterOn = false;
+        effectCounter = 0;
+        score = 0;
+        lines = 0;
+        level = 1;
+        holdMinoType = -1;
+        holdMino = null;
+        holdUsedInTurn = false;
+        gameOver = false;
+        state = GameState.PLAYING;
+
+        currentMinoType = MinoFactory.getRandomType();
+        nextMinoType = MinoFactory.getRandomType();
+        currentMino = MinoFactory.createByType(currentMinoType);
+        currentMino.setXY(MINO_START_X, MINO_START_Y);
+        nextMino = MinoFactory.createByType(nextMinoType);
+        nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
+    }
+
+    public GameState getState() {
+        return state;
+    }
+
+    public void togglePause() {
+        if (state == GameState.PLAYING) {
+            state = GameState.PAUSED;
+        } else if (state == GameState.PAUSED) {
+            state = GameState.PLAYING;
+        }
+    }
+
     public void update (){
         if (KeyHandler.holdPressed) {
             holdMino();
@@ -88,8 +124,9 @@ public class GameManager {
 
             if (isSpawnBlocked()) {
                 gameOver = true;
+                state = GameState.GAME_OVER;
                 GamePanel.music.stop();
-                GamePanel.effect.play(1, false);
+                GamePanel.effect.playEffect(1);
                 return;
             }
 
@@ -152,7 +189,7 @@ public class GameManager {
 
     // Add score once per delete pass, not once per row iteration
     if (lineCount > 0) {
-        GamePanel.effect.play(0, false);
+        GamePanel.effect.playEffect(0);
         score += scoringStrategy.calculate(lineCount, level);
     }
 }
@@ -164,33 +201,29 @@ public class GameManager {
         g2.drawRect(left_x-8, top_y-8, WIDTH+16, HEIGHT+16);
 
         // preview area
-        int x = right_x + 100;
-        int y = bottom_y / 2 - 200;
+        int x = right_x + 90;
+        int y = top_y + 60;
         g2.setColor(Color.white);
         g2.setStroke(new BasicStroke(4f));
-        g2.drawRect(x, y, 200, 500);
+        g2.drawRect(x, y, 210, 270);
         g2.setFont(new Font("Arial", Font.PLAIN, 20));
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.drawString("NEXT", x + 70, y + 30);
 
         // hold area
-        int holdX = left_x - 170;
-        int holdY = bottom_y - 550;
+        int holdX = left_x - 260;
+        int holdY = top_y + 60;
         g2.setColor(Color.white);
         g2.setStroke(new BasicStroke(4f));
-        g2.drawRect(holdX, holdY, 200, 500);
+        g2.drawRect(holdX, holdY, 210, 270);
         g2.setFont(new Font("Arial", Font.PLAIN, 20));
         g2.drawString("HOLD", holdX + 70, holdY + 30);
 
         // Draw Scores under preview area
         g2.setFont(new Font("Arial", Font.PLAIN, 18));
-        g2.drawString("SCORE: " + score, x, y + 550);
-        // Draw Level on the left of the gameplay area, automatically keep distance with the gameplay area when the level increases
-        g2.setFont(new Font("Arial", Font.PLAIN, 18));
-        g2.drawString("LEVEL: " + level, left_x - 110, bottom_y - 50);
-        // Draw Lines Cleared on the left of the gameplay area under the Level, automatically keep distance with the gameplay area when the lines cleared increases
-        g2.setFont(new Font("Arial", Font.PLAIN, 18));
-        g2.drawString("LINES: " + lines, left_x - 110, bottom_y - 20);
+        g2.drawString("SCORE: " + score, x, y + 320);
+        g2.drawString("LEVEL: " + level, holdX, holdY + 320);
+        g2.drawString("LINES: " + lines, holdX, holdY + 350);
 
         //draw current mino
         if(currentMino != null){
@@ -199,11 +232,11 @@ public class GameManager {
         }
 
         //draw next mino
-        nextMino.draw(g2);
+        drawMiniMino(g2, nextMino, x, y);
 
         // draw hold mino
         if (holdMino != null) {
-            holdMino.draw(g2);
+            drawMiniMino(g2, holdMino, holdX, holdY);
         }
 
         //draw static blocks
@@ -236,7 +269,7 @@ public class GameManager {
             g2.setFont(g2.getFont().deriveFont(30f));
             g2.drawString("Press R to Restart", GamePanel.WIDTH / 2 - 140, GamePanel.HEIGHT / 2 + 50);
         }
-        else if (KeyHandler.PausedGame){
+        else if (state == GameState.PAUSED){
             g2.drawString("PAUSED", GamePanel.WIDTH / 2 - 100, GamePanel.HEIGHT / 2);
             g2.drawString("Press P again", GamePanel.WIDTH / 2 - 150, GamePanel.HEIGHT / 2 + 60);
         }
@@ -300,7 +333,7 @@ public class GameManager {
 
         currentMino.deactivating = false;
         currentMino.activeMino = false;
-        GamePanel.effect.play(3, false);
+        GamePanel.effect.playEffect(3);
     }
 
     private int calculateDropDistance(Mino mino) {
@@ -339,6 +372,39 @@ public class GameManager {
                 Block.SIZE - 2 * margin,
                 Block.SIZE - 2 * margin
             );
+        }
+    }
+
+    private void drawMiniMino(Graphics2D g2, Mino mino, int boxX, int boxY) {
+        if (mino == null) {
+            return;
+        }
+
+        int previewSize = 18;
+        int minBlockX = mino.b[0].x;
+        int maxBlockX = mino.b[0].x;
+        int minBlockY = mino.b[0].y;
+        int maxBlockY = mino.b[0].y;
+
+        for (int i = 1; i < mino.b.length; i++) {
+            minBlockX = Math.min(minBlockX, mino.b[i].x);
+            maxBlockX = Math.max(maxBlockX, mino.b[i].x);
+            minBlockY = Math.min(minBlockY, mino.b[i].y);
+            maxBlockY = Math.max(maxBlockY, mino.b[i].y);
+        }
+
+        int cols = (maxBlockX - minBlockX) / Block.SIZE + 1;
+        int rows = (maxBlockY - minBlockY) / Block.SIZE + 1;
+        int pieceWidth = cols * previewSize;
+        int pieceHeight = rows * previewSize;
+        int drawX = boxX + (210 - pieceWidth) / 2;
+        int drawY = boxY + 110 + (120 - pieceHeight) / 2;
+
+        for (int i = 0; i < mino.b.length; i++) {
+            int offsetX = (mino.b[i].x - minBlockX) / Block.SIZE;
+            int offsetY = (mino.b[i].y - minBlockY) / Block.SIZE;
+            g2.setColor(mino.b[i].c);
+            g2.fillRect(drawX + offsetX * previewSize, drawY + offsetY * previewSize, previewSize - 2, previewSize - 2);
         }
     }
 }

@@ -21,38 +21,15 @@ public class Sound {
         url[3] = getClass().getResource("/touchdown.wav");
     }
 
-    public void play(int i, boolean music) {
-
-        try {
-            if (i < 0 || i >= url.length || url[i] == null) {
-                return;
-            }
-
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(url[i]);
-            Clip clip = AudioSystem.getClip();
-
-            if (music) {
-                musicClip = clip;
-            }
-
-            clip.open(audioInputStream);
-            clip.addLineListener(new LineListener() {
-                @Override
-                public void update(LineEvent event) {
-                    if (event.getType() == Type.STOP) {
-                        clip.close();
-                    }
-                }
-            });
-            audioInputStream.close();
-            clip.start();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void playEffect(int i) {
+        playClip(i, false);
     }
 
     public void playAndLoop(int i) {
+        playClip(i, true);
+    }
+
+    private void playClip(int i, boolean loop) {
         try {
             if (i < 0 || i >= url.length || url[i] == null) {
                 return;
@@ -63,16 +40,23 @@ public class Sound {
             musicClip = clip;
             clip.open(audioInputStream);
             audioInputStream.close();
-            clip.loop(Clip.LOOP_CONTINUOUSLY);
+
+            if (loop) {
+                clip.loop(Clip.LOOP_CONTINUOUSLY);
+            } else {
+                clip.addLineListener(new LineListener() {
+                    @Override
+                    public void update(LineEvent event) {
+                        if (event.getType() == Type.STOP) {
+                            clip.close();
+                        }
+                    }
+                });
+                clip.start();
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    public void loop() {
-        if (musicClip != null && musicClip.isOpen()) {
-            musicClip.loop(Clip.LOOP_CONTINUOUSLY);
         }
     }
 

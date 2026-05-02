@@ -14,8 +14,10 @@ public class GamePanel extends JPanel implements Runnable{
     GameManager gameManager;
     public static Sound music = new Sound();
     public static Sound effect = new Sound();
+    private static GamePanel instance;
 
     public GamePanel(){
+        instance = this;
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setBackground(Color.black);
         this.setLayout(null);
@@ -32,24 +34,36 @@ public class GamePanel extends JPanel implements Runnable{
         music.playAndLoop(0);
     }
 
-    public void lauchGame(){
-        launchGame();
-    }
-    private void update(){
-        if (gameManager.isGameOver() && KeyHandler.restartPressed) {
-            gameManager = new GameManager();
-            KeyHandler.restartPressed = false;
-            KeyHandler.PausedGame = false;
-            KeyHandler.leftPressed = false;
-            KeyHandler.rightPressed = false;
-            KeyHandler.downPressed = false;
-            KeyHandler.UpPressed = false;
-            KeyHandler.hardDropPressed = false;
-            KeyHandler.holdPressed = false;
-            music.playAndLoop(0);
+    public static void togglePause(){
+        if (instance == null || instance.gameManager.isGameOver()) {
+            return;
         }
 
-        if (KeyHandler.PausedGame == false && !gameManager.isGameOver()) {
+        instance.gameManager.togglePause();
+        if (instance.gameManager.getState() == GameState.PAUSED) {
+            music.pause();
+        } else {
+            music.resume();
+        }
+    }
+
+    public static void restartGame(){
+        if (instance == null) {
+            return;
+        }
+
+        instance.gameManager.restartGame();
+        music.playAndLoop(0);
+    }
+
+    private void update(){
+        if (gameManager.isGameOver() && KeyHandler.restartPressed) {
+            restartGame();
+            KeyHandler.resetTransientInput();
+            KeyHandler.restartPressed = false;
+        }
+
+        if (gameManager.getState() == GameState.PLAYING) {
             gameManager.update();
         }
     }

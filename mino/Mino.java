@@ -18,6 +18,7 @@ public class Mino {
 
     int autoDropCounter = 0;
     public int direction = 1; // 4 directions
+    protected boolean lastRotationUsedKick;
 
 
     public void create (Color c){
@@ -31,45 +32,28 @@ public class Mino {
         tempB[3] = new Block(c);
     }
     public void setXY(int x, int y){}
-    public void updateXY(int direction){
-        checkRotationCollision();
-        if (!leftCollision && !rightCollision && !downCollision){
-            this.direction = direction;
-            b[0].x = tempB[0].x;
-            b[0].y = tempB[0].y;
-            b[1].x = tempB[1].x;
-            b[1].y = tempB[1].y;
-            b[2].x = tempB[2].x;
-            b[2].y = tempB[2].y;
-            b[3].x = tempB[3].x;
-            b[3].y = tempB[3].y;
+    public boolean updateXY(int direction){
+        int[][] kicks = {
+            {0, 0}, {1, 0}, {-1, 0}, {2, 0}, {-2, 0}, {0, -1}, {0, -2}, {1, -1}, {-1, -1}
+        };
+
+        for (int i = 0; i < kicks.length; i++) {
+            if (canPlaceTempBlocks(kicks[i][0], kicks[i][1])) {
+                applyTempBlocks(direction, kicks[i][0], kicks[i][1]);
+                lastRotationUsedKick = kicks[i][0] != 0 || kicks[i][1] != 0;
+                return true;
+            }
         }
+
+        lastRotationUsedKick = false;
+        return false;
     }
     public void getDirection1 () {}
     public void getDirection2 () {}
     public void getDirection3 () {}
     public void getDirection4 () {}
     public void checkRotationCollision () {
-        rightCollision = false;
-        leftCollision = false;
-        downCollision = false;
-        checkStaticBlockCollision();
-
-        for (int i = 0; i < b.length; i++){
-            if (tempB[i].x < GameManager.left_x){
-                leftCollision = true;
-            }
-        }
-        for (int i = 0; i < b.length; i++){
-            if (tempB[i].x + Block.SIZE > GameManager.right_x){
-                rightCollision = true;
-            }
-        }
-        for (int i = 0; i < b.length; i++){
-            if (tempB[i].y + Block.SIZE > GameManager.bottom_y){
-                downCollision = true;
-            }
-        }
+        canPlaceTempBlocks(0, 0);
     }
     public void checkMovementCollision () {
         rightCollision = false;
@@ -147,23 +131,23 @@ public class Mino {
             }
             KeyHandler.downPressed = false;
         }
-        if (KeyHandler.UpPressed) {
-            switch (direction) {
-                case 1:
-                    getDirection2();
-                    break;
-                case 2:
-                    getDirection3();
-                    break;
-                case 3:
-                    getDirection4();
-                    break;
-                case 4:
-                    getDirection1();
-                    break;
+        if (KeyHandler.rotateClockwisePressed) {
+            if (rotateClockwise()) {
+                GamePanel.effect.playEffect(2);
             }
-            KeyHandler.UpPressed = false;
-            GamePanel.effect.play(2, false);
+            KeyHandler.rotateClockwisePressed = false;
+        }
+        if (KeyHandler.rotateCounterClockwisePressed) {
+            if (rotateCounterClockwise()) {
+                GamePanel.effect.playEffect(2);
+            }
+            KeyHandler.rotateCounterClockwisePressed = false;
+        }
+        if (KeyHandler.rotateHalfTurnPressed) {
+            if (rotateHalfTurn()) {
+                GamePanel.effect.playEffect(2);
+            }
+            KeyHandler.rotateHalfTurnPressed = false;
         }
 
         // Re-check after movement so lock logic uses the current position.
@@ -171,7 +155,7 @@ public class Mino {
 
         if(downCollision){
             if (deactivating == false){
-                GamePanel.effect.play(3, false);
+                GamePanel.effect.playEffect(3);
             }
             deactivating = true;
         }
@@ -204,6 +188,107 @@ public class Mino {
         g2.fillRect(b[1].x + margin, b[1].y + margin, Block.SIZE - 2 * margin, Block.SIZE - 2 * margin);
         g2.fillRect(b[2].x + margin, b[2].y + margin, Block.SIZE - 2 * margin, Block.SIZE - 2 * margin);
         g2.fillRect(b[3].x + margin, b[3].y + margin, Block.SIZE - 2 * margin, Block.SIZE - 2 * margin);
+    }
+
+    public boolean rotateClockwise() {
+        int oldDirection = direction;
+        switch (direction) {
+            case 1:
+                getDirection2();
+                break;
+            case 2:
+                getDirection3();
+                break;
+            case 3:
+                getDirection4();
+                break;
+            case 4:
+                getDirection1();
+                break;
+        }
+        return direction != oldDirection;
+    }
+
+    public boolean rotateCounterClockwise() {
+        int oldDirection = direction;
+        switch (direction) {
+            case 1:
+                getDirection4();
+                break;
+            case 2:
+                getDirection1();
+                break;
+            case 3:
+                getDirection2();
+                break;
+            case 4:
+                getDirection3();
+                break;
+        }
+        return direction != oldDirection;
+    }
+
+    public boolean rotateHalfTurn() {
+        int oldDirection = direction;
+        int[] oldX = new int[b.length];
+        int[] oldY = new int[b.length];
+
+        for (int i = 0; i < b.length; i++) {
+            oldX[i] = b[i].x;
+            oldY[i] = b[i].y;
+        }
+
+        boolean first = rotateClockwise();
+        boolean second = first && rotateClockwise();
+
+        if (!first || !second) {
+            direction = oldDirection;
+            for (int i = 0; i < b.length; i++) {
+                b[i].x = oldX[i];
+                b[i].y = oldY[i];
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean canPlaceTempBlocks(int offsetX, int offsetY) {
+        rightCollision = false;
+        leftCollision = false;
+        downCollision = false;
+
+        for (int i = 0; i < b.length; i++) {
+            int nextX = tempB[i].x + offsetX * Block.SIZE;
+            int nextY = tempB[i].y + offsetY * Block.SIZE;
+
+            if (nextX < GameManager.left_x) {
+                leftCollision = true;
+            }
+            if (nextX + Block.SIZE > GameManager.right_x) {
+                rightCollision = true;
+            }
+            if (nextY + Block.SIZE > GameManager.bottom_y) {
+                downCollision = true;
+            }
+
+            for (int j = 0; j < GameManager.staticBlocks.size(); j++) {
+                Block staticBlock = GameManager.staticBlocks.get(j);
+                if (nextX == staticBlock.x && nextY == staticBlock.y) {
+                    return false;
+                }
+            }
+        }
+
+        return !leftCollision && !rightCollision && !downCollision;
+    }
+
+    private void applyTempBlocks(int newDirection, int offsetX, int offsetY) {
+        direction = newDirection;
+        for (int i = 0; i < b.length; i++) {
+            b[i].x = tempB[i].x + offsetX * Block.SIZE;
+            b[i].y = tempB[i].y + offsetY * Block.SIZE;
+        }
     }
 }
 

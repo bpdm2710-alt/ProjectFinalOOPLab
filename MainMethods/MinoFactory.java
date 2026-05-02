@@ -1,5 +1,8 @@
 package MainMethods;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Random;
 
 import mino.Mino;
@@ -13,12 +16,19 @@ import mino.Mino_Z;
 
 public class MinoFactory {
     private static final Random RANDOM = new Random();
+    private static ArrayList<Integer> currentBag = new ArrayList<>();
+    private static int bagIndex = 7;
 
     private MinoFactory() {
     }
 
     public static int getRandomType() {
-        return RANDOM.nextInt(7);
+        if (bagIndex >= currentBag.size()) {
+            currentBag = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5, 6));
+            Collections.shuffle(currentBag, RANDOM);
+            bagIndex = 0;
+        }
+        return currentBag.get(bagIndex++);
     }
 
     public static Mino createByType(int type) {
