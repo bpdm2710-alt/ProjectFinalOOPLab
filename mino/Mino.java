@@ -29,7 +29,7 @@ public class Mino {
     }
     public void setXY(int x, int y){}
     public void updateXY(int direction){
-        checkMovementCollision();
+        checkRotationCollision();
         if (!leftCollision && !rightCollision && !downCollision){
             this.direction = direction;
             b[0].x = tempB[0].x;
@@ -47,7 +47,12 @@ public class Mino {
     public void getDirection3 () {}
     public void getDirection4 () {}
     public void checkRotationCollision () {
-         for (int i = 0; i < b.length; i++){
+        rightCollision = false;
+        leftCollision = false;
+        downCollision = false;
+        checkStaticBlockCollision();
+
+        for (int i = 0; i < b.length; i++){
             if (tempB[i].x < GameManager.left_x){
                 leftCollision = true;
             }
@@ -64,6 +69,10 @@ public class Mino {
         }
     }
     public void checkMovementCollision () {
+        rightCollision = false;
+        leftCollision = false;
+        downCollision = false;
+        checkStaticBlockCollision();
         for (int i = 0; i < b.length; i++){
             if (b[i].x == GameManager.left_x){
                 leftCollision = true;
@@ -77,6 +86,24 @@ public class Mino {
         for (int i = 0; i < b.length; i++){
             if (b[i].y + Block.SIZE == GameManager.bottom_y){
                 downCollision = true;
+            }
+        }
+    }
+    public void checkStaticBlockCollision(){
+        for (int i = 0; i < GameManager.staticBlocks.size(); i++){
+            int TargetX = GameManager.staticBlocks.get(i).x;
+            int TargetY = GameManager.staticBlocks.get(i).y;
+
+            for (int j = 0; j < b.length; j++){
+                if (b[j].x == TargetX && b[j].y + Block.SIZE == TargetY){
+                    downCollision = true;
+                }
+                if (b[j].x + Block.SIZE == TargetX && b[j].y == TargetY){
+                    rightCollision = true;
+                }
+                if (b[j].x - Block.SIZE == TargetX && b[j].y == TargetY){
+                    leftCollision = true;
+                }
             }
         }
     }
