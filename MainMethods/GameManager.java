@@ -29,6 +29,10 @@ public class GameManager {
 
     public static int dropInterval = 60;
 
+    boolean effectCounterOn;
+    int effectCounter;
+    ArrayList<Integer> effectY = new ArrayList<>();
+
     public GameManager(){
         left_x = (GamePanel.WIDTH - WIDTH) / 2;
         right_x = left_x + WIDTH;
