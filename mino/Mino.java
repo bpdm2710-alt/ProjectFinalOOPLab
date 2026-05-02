@@ -113,6 +113,7 @@ public class Mino {
 
         if (deactivating){
             deactivating();
+        }
         checkMovementCollision();
 
         if (KeyHandler.leftPressed){
@@ -162,7 +163,6 @@ public class Mino {
             }
             KeyHandler.UpPressed = false;
         }
-    }
         if(downCollision){
             deactivating = true;
         }
