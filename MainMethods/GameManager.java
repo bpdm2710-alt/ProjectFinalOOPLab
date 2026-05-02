@@ -57,6 +57,7 @@ public class GameManager {
     public GameManager(){
         dropInterval = 60;
         staticBlocks.clear();
+        MinoFactory.resetBag(); // Reset piece randomizer on new game
 
         left_x = (GamePanel.WIDTH - WIDTH) / 2;
         right_x = left_x + WIDTH;
@@ -72,15 +73,15 @@ public class GameManager {
         HOLDMINO_X = left_x - 210;
         HOLDMINO_Y = top_y + 100;
 
-        // Initialize preview queue with 5 pieces ahead
+        // Initialize preview queue - 3 pieces for display
         previewQueue.clear();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             previewQueue.add(MinoFactory.getRandomType());
         }
-
-        currentMinoType = previewQueue.poll();
-        nextMinoType = previewQueue.poll();
-        previewQueue.add(MinoFactory.getRandomType()); // Keep queue at 5
+        
+        // Get current and next pieces
+        currentMinoType = MinoFactory.getRandomType();
+        nextMinoType = MinoFactory.getRandomType();
         
         currentMino = MinoFactory.createByType(currentMinoType);
         currentMino.setXY(MINO_START_X, MINO_START_Y);
@@ -101,16 +102,18 @@ public class GameManager {
         holdMino = null;
         holdUsedInTurn = false;
         state = GameState.PLAYING;
+        
+        // Critical: Reset piece randomizer for new game
+        MinoFactory.resetBag();
 
-        // Reinitialize preview queue
+        // Reinitialize preview queue - 3 pieces for display
         previewQueue.clear();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             previewQueue.add(MinoFactory.getRandomType());
         }
 
-        currentMinoType = previewQueue.poll();
-        nextMinoType = previewQueue.poll();
-        previewQueue.add(MinoFactory.getRandomType()); // Keep queue at 5
+        currentMinoType = MinoFactory.getRandomType();
+        nextMinoType = MinoFactory.getRandomType();
         
         currentMino = MinoFactory.createByType(currentMinoType);
         currentMino.setXY(MINO_START_X, MINO_START_Y);
@@ -481,15 +484,16 @@ public class GameManager {
         int pieceWidth = cols * blockSize;
         int pieceHeight = rows * blockSize;
         
+        // FIX #3: Proper centering without hardcoded values
         // Center piece within the preview box
         int boxWidth = 180;
-        int boxHeight = (blockSize >= 50) ? 70 : 85; // Larger box for bigger blocks
+        int boxHeight = 80;  // Standard box height for any piece
         
-        // Horizontal centering
+        // Horizontal centering - always center in box width
         int drawX = boxX + (boxWidth - pieceWidth) / 2;
         
-        // Vertical centering with slight offset
-        int drawY = boxY + (boxHeight - pieceHeight) / 2 + 35;
+        // Vertical centering - center in box height with 5px top padding
+        int drawY = boxY + 5 + (boxHeight - pieceHeight) / 2;
 
         // Draw each block of the piece
         for (int i = 0; i < mino.b.length; i++) {

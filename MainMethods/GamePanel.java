@@ -17,6 +17,9 @@ public class GamePanel extends JPanel implements Runnable{
     private static GamePanel instance;
 
     public GamePanel(){
+        if (instance != null) {
+            throw new RuntimeException("GamePanel is a singleton and should only be instantiated once");
+        }
         instance = this;
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setBackground(Color.black);
@@ -57,6 +60,12 @@ public class GamePanel extends JPanel implements Runnable{
     }
 
     private void update(){
+        // FIX #1: Reset restartPressed if game is NOT in GAME_OVER state
+        // This prevents R key from being held over into game over state
+        if (KeyHandler.restartPressed && gameManager.getState() != GameState.GAME_OVER) {
+            KeyHandler.restartPressed = false; // Discard R key if not game over
+        }
+        
         // Only allow restart if game is explicitly in GAME_OVER state
         // AND R key was just pressed (not held from before)
         if (gameManager.getState() == GameState.GAME_OVER && KeyHandler.restartPressed) {

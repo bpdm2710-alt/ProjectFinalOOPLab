@@ -22,6 +22,15 @@ public class MinoFactory {
     private MinoFactory() {
     }
 
+    /**
+     * Reset the 7-bag randomizer state.
+     * Must be called when game restarts to ensure piece sequence resets.
+     */
+    public static void resetBag() {
+        currentBag.clear();
+        bagIndex = 7;
+    }
+
     public static int getRandomType() {
         if (bagIndex >= currentBag.size()) {
             currentBag = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5, 6));

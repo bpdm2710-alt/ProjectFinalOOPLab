@@ -229,31 +229,52 @@ public class Mino {
     }
 
     public boolean rotateHalfTurn() {
+        // Save original state
         int oldDirection = direction;
         int[] oldX = new int[b.length];
         int[] oldY = new int[b.length];
-
         for (int i = 0; i < b.length; i++) {
             oldX[i] = b[i].x;
             oldY[i] = b[i].y;
         }
 
+        // FIXED: Rotate 180 degrees properly
+        // Method: Try both CW and CCW approaches to find valid 180-degree rotation
+        // First attempt: CW + CW
         boolean first = rotateClockwise();
         boolean second = first && rotateClockwise();
 
-        if (!first || !second) {
-            direction = oldDirection;
-            for (int i = 0; i < b.length; i++) {
-                b[i].x = oldX[i];
-                b[i].y = oldY[i];
-            }
-            return false;
+        if (second) {
+            // Success: 180-degree rotation with wall kicks applied
+            return true;
         }
 
-        return true;
+        // If CW+CW failed, try CCW+CCW (sometimes finds different wall kick solutions)
+        direction = oldDirection;
+        for (int i = 0; i < b.length; i++) {
+            b[i].x = oldX[i];
+            b[i].y = oldY[i];
+        }
+        
+        boolean firstCCW = rotateCounterClockwise();
+        boolean secondCCW = firstCCW && rotateCounterClockwise();
+        
+        if (secondCCW) {
+            // Success: 180-degree rotation via CCW+CCW
+            return true;
+        }
+
+        // Both methods failed, restore and return false
+        direction = oldDirection;
+        for (int i = 0; i < b.length; i++) {
+            b[i].x = oldX[i];
+            b[i].y = oldY[i];
+        }
+        return false;
     }
 
     private boolean canPlaceTempBlocks(int offsetX, int offsetY) {
+        // Reset collision flags ONCE at the beginning
         rightCollision = false;
         leftCollision = false;
         downCollision = false;
@@ -262,6 +283,7 @@ public class Mino {
             int nextX = tempB[i].x + offsetX * Block.SIZE;
             int nextY = tempB[i].y + offsetY * Block.SIZE;
 
+            // Check boundary collisions
             if (nextX < GameManager.left_x) {
                 leftCollision = true;
             }
@@ -272,10 +294,13 @@ public class Mino {
                 downCollision = true;
             }
 
+            // Check static block collisions
             for (int j = 0; j < GameManager.staticBlocks.size(); j++) {
                 Block staticBlock = GameManager.staticBlocks.get(j);
                 if (nextX == staticBlock.x && nextY == staticBlock.y) {
-                    return false;
+                    // FIX #2: Block occupies exact position - cannot place here
+                    // Use downCollision as general "blocked" flag
+                    downCollision = true;
                 }
             }
         }
