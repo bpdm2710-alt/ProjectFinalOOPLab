@@ -12,6 +12,8 @@ public class Mino {
     boolean rightCollision = false;
     boolean downCollision = false;
     public boolean activeMino = true;
+    boolean deactivating;
+    int deactivateCounter = 0;  
 
     int autoDropCounter = 0;
     public int direction = 1; // 4 directions
@@ -108,6 +110,9 @@ public class Mino {
         }
     }
     public void update (){
+
+        if (deactivating){
+            deactivating();
         checkMovementCollision();
 
         if (KeyHandler.leftPressed){
@@ -157,9 +162,9 @@ public class Mino {
             }
             KeyHandler.UpPressed = false;
         }
-
+    }
         if(downCollision){
-            activeMino = false;
+            deactivating = true;
         }
         else {
             autoDropCounter++;
@@ -172,6 +177,15 @@ public class Mino {
             }
         }
     }
+    public void deactivating(){
+        deactivateCounter++;
+        if (deactivateCounter == 45){
+            checkMovementCollision();
+            if(downCollision){
+                activeMino = false;
+            }
+        }
+    }
     public void draw (Graphics2D g2){
         int margin = 2;
         g2.setColor(b[0].c);
@@ -179,7 +193,6 @@ public class Mino {
         g2.fillRect(b[1].x + margin, b[1].y + margin, Block.SIZE - 2 * margin, Block.SIZE - 2 * margin);
         g2.fillRect(b[2].x + margin, b[2].y + margin, Block.SIZE - 2 * margin, Block.SIZE - 2 * margin);
         g2.fillRect(b[3].x + margin, b[3].y + margin, Block.SIZE - 2 * margin, Block.SIZE - 2 * margin);
-
-
     }
 }
+
