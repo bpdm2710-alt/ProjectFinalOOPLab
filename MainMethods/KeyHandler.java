@@ -25,10 +25,13 @@ public class KeyHandler implements KeyListener {
             UpPressed = true;
         }
         if (code == KeyEvent.VK_P){
-            if (!PausedGame){
-                PausedGame = true;
-            } else {
+            if (PausedGame){
                 PausedGame = false;
+                GamePanel.effect.play(3, false);
+                GamePanel.music.loop();
+            } else {
+                PausedGame = true;
+                GamePanel.music.stop();
             }
         }
     }

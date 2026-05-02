@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -77,6 +76,8 @@ public class GameManager {
 
             if (currentMino.b[0].x == MINO_START_X && currentMino.b[0].y == MINO_START_Y) {
                 gameOver = true;
+                GamePanel.music.stop();
+                GamePanel.effect.play(1, false);
             }
 
             currentMino.deactivating = false;
@@ -138,6 +139,7 @@ public class GameManager {
 
         // Add score
         if (lineCount > 0) {
+            GamePanel.effect.play(0, false);
             score += lineCount * 100;
         }
     }

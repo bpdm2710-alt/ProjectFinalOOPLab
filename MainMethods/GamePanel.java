@@ -12,6 +12,8 @@ public class GamePanel extends JPanel implements Runnable{
     final int FPS = 60;
     Thread gameThread;
     GameManager gameManager;
+    public static Sound music = new Sound();
+    public static Sound effect = new Sound();
 
     public GamePanel(){
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -26,6 +28,9 @@ public class GamePanel extends JPanel implements Runnable{
     public void lauchGame(){
         gameThread = new Thread(this);
         gameThread.start();
+
+        music.play(0, true);
+        music.loop();
     }
     private void update(){
         if (KeyHandler.PausedGame == false && !gameManager.gameOver) {

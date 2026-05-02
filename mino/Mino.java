@@ -3,6 +3,7 @@ package mino;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import MainMethods.GameManager;
+import MainMethods.GamePanel;
 import MainMethods.KeyHandler;
 
 public class Mino {
@@ -162,8 +163,12 @@ public class Mino {
                     break;
             }
             KeyHandler.UpPressed = false;
+            GamePanel.effect.play(2, false);
         }
         if(downCollision){
+            if (deactivating == false){
+                GamePanel.effect.play(4, false);
+            }
             deactivating = true;
         }
         else {
