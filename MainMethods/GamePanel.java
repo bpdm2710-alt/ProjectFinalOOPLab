@@ -33,6 +33,14 @@ public class GamePanel extends JPanel implements Runnable{
         music.loop();
     }
     private void update(){
+        if (gameManager.gameOver && KeyHandler.restartPressed) {
+            gameManager = new GameManager();
+            KeyHandler.restartPressed = false;
+            KeyHandler.PausedGame = false;
+            music.play(0, true);
+            music.loop();
+        }
+
         if (KeyHandler.PausedGame == false && !gameManager.gameOver) {
             gameManager.update();
         }

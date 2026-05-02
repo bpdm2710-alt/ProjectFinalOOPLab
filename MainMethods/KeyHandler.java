@@ -5,6 +5,7 @@ import java.awt.event.KeyListener;
 
 public class KeyHandler implements KeyListener {
     public static volatile boolean leftPressed, rightPressed, downPressed, UpPressed, PausedGame;
+    public static volatile boolean hardDropPressed, holdPressed, restartPressed;
 
     @Override
     public void keyTyped(KeyEvent e) {}
@@ -23,6 +24,15 @@ public class KeyHandler implements KeyListener {
         }
         if (code == KeyEvent.VK_UP){
             UpPressed = true;
+        }
+        if (code == KeyEvent.VK_SPACE){
+            hardDropPressed = true;
+        }
+        if (code == KeyEvent.VK_C || code == KeyEvent.VK_SHIFT){
+            holdPressed = true;
+        }
+        if (code == KeyEvent.VK_R){
+            restartPressed = true;
         }
         if (code == KeyEvent.VK_P){
             if (PausedGame){

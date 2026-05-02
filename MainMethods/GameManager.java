@@ -6,7 +6,6 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.util.ArrayList;
-import java.util.Random;
 
 import mino.*;
 
@@ -24,6 +23,8 @@ public class GameManager {
     Mino nextMino;
     final int NEXTMINO_X;
     final int NEXTMINO_Y;
+    final int HOLDMINO_X;
+    final int HOLDMINO_Y;
     public static ArrayList<Block> staticBlocks = new ArrayList<>();
 
     public static int dropInterval = 60;
@@ -36,6 +37,13 @@ public class GameManager {
     int level = 1;
     int lines = 0;
     int score = 0;
+    int currentMinoType;
+    int nextMinoType;
+    int holdMinoType = -1;
+    Mino holdMino;
+    boolean holdUsedInTurn;
+
+    private final ScoringStrategy scoringStrategy = new GuidelineScoring();
 
     public GameManager(){
         left_x = (GamePanel.WIDTH - WIDTH) / 2;
@@ -47,27 +55,28 @@ public class GameManager {
         MINO_START_Y = top_y + Block.SIZE;
         NEXTMINO_X = right_x + 175;
         NEXTMINO_Y = top_y + 200;
+        HOLDMINO_X = left_x - 145;
+        HOLDMINO_Y = top_y + 200;
 
-        currentMino = getRandomMino();
+        currentMinoType = MinoFactory.getRandomType();
+        nextMinoType = MinoFactory.getRandomType();
+        currentMino = MinoFactory.createByType(currentMinoType);
         currentMino.setXY(MINO_START_X, MINO_START_Y);
-        nextMino = getRandomMino();
+        nextMino = MinoFactory.createByType(nextMinoType);
         nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
     }
-    private Mino getRandomMino(){
-        Mino mino = null;
-        int i = new Random().nextInt(7);
-        switch(i){
-            case 0: mino = new Mino_L(); break;
-            case 1: mino = new Mino_J(); break;
-            case 2: mino = new Mino_I(); break;
-            case 3: mino = new Mino_O(); break;
-            case 4: mino = new Mino_Z(); break;
-            case 5: mino = new Mino_T(); break;
-            case 6: mino = new Mino_S(); break;
-        }
-        return mino;
-    }
+
     public void update (){
+        if (KeyHandler.holdPressed) {
+            holdMino();
+            KeyHandler.holdPressed = false;
+        }
+
+        if (KeyHandler.hardDropPressed) {
+            hardDropCurrentMino();
+            KeyHandler.hardDropPressed = false;
+        }
+
         if (currentMino.activeMino == false){
             staticBlocks.add(currentMino.b[0]);
             staticBlocks.add(currentMino.b[1]);
@@ -82,11 +91,9 @@ public class GameManager {
             }
 
             currentMino.deactivating = false;
+            holdUsedInTurn = false;
 
-            currentMino = nextMino;
-            currentMino.setXY(MINO_START_X, MINO_START_Y);
-            nextMino = getRandomMino();
-            nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
+            spawnNextMino();
 
             checkDelete();
         }else {
@@ -143,7 +150,7 @@ public class GameManager {
     // Add score once per delete pass, not once per row iteration
     if (lineCount > 0) {
         GamePanel.effect.play(0, false);
-        score += lineCount * 100;
+        score += scoringStrategy.calculate(lineCount, level);
     }
 }
 
@@ -163,6 +170,15 @@ public class GameManager {
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.drawString("NEXT", x + 70, y + 30);
 
+        // hold area
+        int holdX = left_x - 170;
+        int holdY = bottom_y - 550;
+        g2.setColor(Color.white);
+        g2.setStroke(new BasicStroke(4f));
+        g2.drawRect(holdX, holdY, 200, 500);
+        g2.setFont(new Font("Arial", Font.PLAIN, 20));
+        g2.drawString("HOLD", holdX + 70, holdY + 30);
+
         // Draw Scores under preview area
         g2.setFont(new Font("Arial", Font.PLAIN, 18));
         g2.drawString("SCORE: " + score, x, y + 550);
@@ -175,11 +191,17 @@ public class GameManager {
 
         //draw current mino
         if(currentMino != null){
+            drawGhostMino(g2);
             currentMino.draw(g2);
         }
 
         //draw next mino
         nextMino.draw(g2);
+
+        // draw hold mino
+        if (holdMino != null) {
+            holdMino.draw(g2);
+        }
 
         //draw static blocks
         for(int i = 0; i < staticBlocks.size(); i++){
@@ -209,6 +231,7 @@ public class GameManager {
         if (gameOver) {
             g2.drawString("GAME OVER", GamePanel.WIDTH / 2 - 150, GamePanel.HEIGHT / 2);
             g2.setFont(g2.getFont().deriveFont(30f));
+            g2.drawString("Press R to Restart", GamePanel.WIDTH / 2 - 140, GamePanel.HEIGHT / 2 + 50);
         }
         else if (KeyHandler.PausedGame){
             g2.drawString("PAUSED", GamePanel.WIDTH / 2 - 100, GamePanel.HEIGHT / 2);
@@ -225,5 +248,90 @@ public class GameManager {
             }
         }
         return false;
+    }
+
+    private void spawnNextMino() {
+        currentMinoType = nextMinoType;
+        currentMino = MinoFactory.createByType(currentMinoType);
+        currentMino.setXY(MINO_START_X, MINO_START_Y);
+
+        nextMinoType = MinoFactory.getRandomType();
+        nextMino = MinoFactory.createByType(nextMinoType);
+        nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
+    }
+
+    private void holdMino() {
+        if (holdUsedInTurn || currentMino == null) {
+            return;
+        }
+
+        if (holdMinoType == -1) {
+            holdMinoType = currentMinoType;
+            spawnNextMino();
+        } else {
+            int swapType = currentMinoType;
+            currentMinoType = holdMinoType;
+            holdMinoType = swapType;
+            currentMino = MinoFactory.createByType(currentMinoType);
+            currentMino.setXY(MINO_START_X, MINO_START_Y);
+        }
+
+        holdMino = MinoFactory.createByType(holdMinoType);
+        holdMino.setXY(HOLDMINO_X, HOLDMINO_Y);
+        holdUsedInTurn = true;
+    }
+
+    private void hardDropCurrentMino() {
+        if (currentMino == null || !currentMino.activeMino) {
+            return;
+        }
+
+        int dropDistance = calculateDropDistance(currentMino);
+        for (int i = 0; i < currentMino.b.length; i++) {
+            currentMino.b[i].y += dropDistance * Block.SIZE;
+        }
+
+        currentMino.deactivating = false;
+        currentMino.activeMino = false;
+        GamePanel.effect.play(3, false);
+    }
+
+    private int calculateDropDistance(Mino mino) {
+        int minDrop = Integer.MAX_VALUE;
+
+        for (int i = 0; i < mino.b.length; i++) {
+            int limitY = bottom_y - Block.SIZE;
+
+            for (int j = 0; j < staticBlocks.size(); j++) {
+                Block staticBlock = staticBlocks.get(j);
+                if (staticBlock.x == mino.b[i].x && staticBlock.y > mino.b[i].y) {
+                    limitY = Math.min(limitY, staticBlock.y - Block.SIZE);
+                }
+            }
+
+            int dropForBlock = (limitY - mino.b[i].y) / Block.SIZE;
+            minDrop = Math.min(minDrop, dropForBlock);
+        }
+
+        return Math.max(minDrop, 0);
+    }
+
+    private void drawGhostMino(Graphics2D g2) {
+        int dropDistance = calculateDropDistance(currentMino);
+        if (dropDistance <= 0) {
+            return;
+        }
+
+        int margin = 2;
+        Color c = currentMino.b[0].c;
+        g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 70));
+        for (int i = 0; i < currentMino.b.length; i++) {
+            g2.fillRect(
+                currentMino.b[i].x + margin,
+                currentMino.b[i].y + dropDistance * Block.SIZE + margin,
+                Block.SIZE - 2 * margin,
+                Block.SIZE - 2 * margin
+            );
+        }
     }
 }
