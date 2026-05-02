@@ -12,7 +12,7 @@ public class Mino {
     boolean rightCollision = false;
     boolean downCollision = false;
     public boolean activeMino = true;
-    boolean deactivating;
+    public boolean deactivating;
     int deactivateCounter = 0;  
 
     int autoDropCounter = 0;
