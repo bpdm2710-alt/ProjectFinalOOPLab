@@ -133,19 +133,19 @@ public class Mino {
         }
         if (KeyHandler.rotateClockwisePressed) {
             if (rotateClockwise()) {
-                GamePanel.effect.playEffect(2);
+                GamePanel.effect.playEffect(3);
             }
             KeyHandler.rotateClockwisePressed = false;
         }
         if (KeyHandler.rotateCounterClockwisePressed) {
             if (rotateCounterClockwise()) {
-                GamePanel.effect.playEffect(2);
+                GamePanel.effect.playEffect(3);
             }
             KeyHandler.rotateCounterClockwisePressed = false;
         }
         if (KeyHandler.rotateHalfTurnPressed) {
             if (rotateHalfTurn()) {
-                GamePanel.effect.playEffect(2);
+                GamePanel.effect.playEffect(3);
             }
             KeyHandler.rotateHalfTurnPressed = false;
         }
@@ -155,7 +155,7 @@ public class Mino {
 
         if(downCollision){
             if (deactivating == false){
-                GamePanel.effect.playEffect(3);
+                GamePanel.effect.playEffect(4);
             }
             deactivating = true;
         }

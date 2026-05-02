@@ -6,7 +6,6 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 import mino.*;
 
@@ -154,7 +153,7 @@ public class GameManager {
                 gameOver = true;
                 state = GameState.GAME_OVER;
                 GamePanel.music.stop();
-                GamePanel.effect.playEffect(1);
+                GamePanel.effect.playEffect(2);
                 return;
             }
 
@@ -218,7 +217,7 @@ public class GameManager {
 
     // Add score once per delete pass, not once per row iteration
     if (lineCount > 0) {
-        GamePanel.effect.playEffect(0);
+        GamePanel.effect.playEffect(1);
         score += scoringStrategy.calculate(lineCount, level);
     }
 }
@@ -394,7 +393,7 @@ public class GameManager {
 
         currentMino.deactivating = false;
         currentMino.activeMino = false;
-        GamePanel.effect.playEffect(3);
+        GamePanel.effect.playEffect(4);
     }
 
     private int calculateDropDistance(Mino mino) {
@@ -436,15 +435,12 @@ public class GameManager {
         }
     }
 
-    private void drawMiniMino(Graphics2D g2, Mino mino, int boxX, int boxY) {
-        drawMiniMino(g2, mino, boxX, boxY, 18); // Default size
-    }
-
     private void drawMiniMino(Graphics2D g2, Mino mino, int boxX, int boxY, int blockSize) {
         if (mino == null) {
             return;
         }
 
+        // Find the bounding box of the piece
         int minBlockX = mino.b[0].x;
         int maxBlockX = mino.b[0].x;
         int minBlockY = mino.b[0].y;
@@ -457,17 +453,23 @@ public class GameManager {
             maxBlockY = Math.max(maxBlockY, mino.b[i].y);
         }
 
+        // Calculate piece dimensions in blocks
         int cols = (maxBlockX - minBlockX) / Block.SIZE + 1;
         int rows = (maxBlockY - minBlockY) / Block.SIZE + 1;
         int pieceWidth = cols * blockSize;
         int pieceHeight = rows * blockSize;
         
-        // Calculate center position within box
-        int boxWidth = 180;  // Updated for new board size
-        int boxHeight = (blockSize == 60) ? 70 : 70; // Height varies by context
+        // Center piece within the preview box
+        int boxWidth = 180;
+        int boxHeight = (blockSize >= 50) ? 70 : 85; // Larger box for bigger blocks
+        
+        // Horizontal centering
         int drawX = boxX + (boxWidth - pieceWidth) / 2;
-        int drawY = boxY + (boxHeight - pieceHeight) / 2 + 40;
+        
+        // Vertical centering with slight offset
+        int drawY = boxY + (boxHeight - pieceHeight) / 2 + 35;
 
+        // Draw each block of the piece
         for (int i = 0; i < mino.b.length; i++) {
             int offsetX = (mino.b[i].x - minBlockX) / Block.SIZE;
             int offsetY = (mino.b[i].y - minBlockY) / Block.SIZE;
