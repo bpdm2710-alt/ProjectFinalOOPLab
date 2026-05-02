@@ -12,7 +12,7 @@ import javax.sound.sampled.LineEvent.Type;
 public class Sound {
     
     Clip musicClip;
-    URL url[] = new URL[10];
+    URL url[] = new URL[4];
 
     public Sound(){
         url[0] = getClass().getResource("/delete line.wav");
@@ -24,6 +24,10 @@ public class Sound {
     public void play(int i, boolean music) {
 
         try {
+            if (i < 0 || i >= url.length || url[i] == null) {
+                return;
+            }
+
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(url[i]);
             Clip clip = AudioSystem.getClip();
 
@@ -48,10 +52,15 @@ public class Sound {
         }
     }
     public void loop() {
-        musicClip.loop(Clip.LOOP_CONTINUOUSLY);
+        if (musicClip != null && musicClip.isOpen()) {
+            musicClip.loop(Clip.LOOP_CONTINUOUSLY);
+        }
     }
     public void stop() {
-        musicClip.stop();
-        musicClip.close();
+        if (musicClip != null) {
+            musicClip.stop();
+            musicClip.close();
+            musicClip = null;
+        }
     }
 }

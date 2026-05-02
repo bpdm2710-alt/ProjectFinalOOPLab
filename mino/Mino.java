@@ -165,13 +165,19 @@ public class Mino {
             KeyHandler.UpPressed = false;
             GamePanel.effect.play(2, false);
         }
+
+        // Re-check after movement so lock logic uses the current position.
+        checkMovementCollision();
+
         if(downCollision){
             if (deactivating == false){
-                GamePanel.effect.play(4, false);
+                GamePanel.effect.play(3, false);
             }
             deactivating = true;
         }
         else {
+            deactivating = false;
+            deactivateCounter = 0;
             autoDropCounter++;
             if (autoDropCounter == GameManager.dropInterval){
             b[0].y += Block.SIZE;
@@ -184,7 +190,7 @@ public class Mino {
     }
     public void deactivating(){
         deactivateCounter++;
-        if (deactivateCounter == 45){
+        if (deactivateCounter >= 45){
             checkMovementCollision();
             if(downCollision){
                 activeMino = false;

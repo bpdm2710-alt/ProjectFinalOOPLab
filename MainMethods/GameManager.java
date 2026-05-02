@@ -74,10 +74,11 @@ public class GameManager {
             staticBlocks.add(currentMino.b[2]);
             staticBlocks.add(currentMino.b[3]);
 
-            if (currentMino.b[0].x == MINO_START_X && currentMino.b[0].y == MINO_START_Y) {
+            if (isGameOver()) {
                 gameOver = true;
                 GamePanel.music.stop();
                 GamePanel.effect.play(1, false);
+                return;
             }
 
             currentMino.deactivating = false;
@@ -120,6 +121,7 @@ public class GameManager {
 
             lineCount++;
             lines++;
+            level = lines / 5 + 1;
             // Drop speed - by tetr.io
             // if the level increases, increase the drop speed speed
             if (lines % 5 == 0) {
@@ -136,12 +138,12 @@ public class GameManager {
         } else {
             y += Block.SIZE;
         }
+    }
 
-        // Add score
-        if (lineCount > 0) {
-            GamePanel.effect.play(0, false);
-            score += lineCount * 100;
-        }
+    // Add score once per delete pass, not once per row iteration
+    if (lineCount > 0) {
+        GamePanel.effect.play(0, false);
+        score += lineCount * 100;
     }
 }
 
@@ -163,13 +165,13 @@ public class GameManager {
 
         // Draw Scores under preview area
         g2.setFont(new Font("Arial", Font.PLAIN, 18));
-        g2.drawString("SCORE: " + (effectY.size() * 100), x, y + 550);
+        g2.drawString("SCORE: " + score, x, y + 550);
         // Draw Level on the left of the gameplay area, automatically keep distance with the gameplay area when the level increases
         g2.setFont(new Font("Arial", Font.PLAIN, 18));
-        g2.drawString("LEVEL: " + (effectY.size() / 5 + 1), left_x - 110, bottom_y - 50);
+        g2.drawString("LEVEL: " + level, left_x - 110, bottom_y - 50);
         // Draw Lines Cleared on the left of the gameplay area under the Level, automatically keep distance with the gameplay area when the lines cleared increases
         g2.setFont(new Font("Arial", Font.PLAIN, 18));
-        g2.drawString("LINES: " + effectY.size(), left_x - 110, bottom_y - 20);
+        g2.drawString("LINES: " + lines, left_x - 110, bottom_y - 20);
 
         //draw current mino
         if(currentMino != null){
@@ -214,5 +216,14 @@ public class GameManager {
         }
 
         // For Left side info
+    }
+
+    private boolean isGameOver() {
+        for (int i = 0; i < staticBlocks.size(); i++) {
+            if (staticBlocks.get(i).y <= MINO_START_Y) {
+                return true;
+            }
+        }
+        return false;
     }
 }
