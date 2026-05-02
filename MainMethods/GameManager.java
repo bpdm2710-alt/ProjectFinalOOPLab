@@ -46,6 +46,9 @@ public class GameManager {
     private final ScoringStrategy scoringStrategy = new GuidelineScoring();
 
     public GameManager(){
+        dropInterval = 60;
+        staticBlocks.clear();
+
         left_x = (GamePanel.WIDTH - WIDTH) / 2;
         right_x = left_x + WIDTH;
         top_y = 50;
@@ -83,7 +86,7 @@ public class GameManager {
             staticBlocks.add(currentMino.b[2]);
             staticBlocks.add(currentMino.b[3]);
 
-            if (isGameOver()) {
+            if (isSpawnBlocked()) {
                 gameOver = true;
                 GamePanel.music.stop();
                 GamePanel.effect.play(1, false);
@@ -241,13 +244,17 @@ public class GameManager {
         // For Left side info
     }
 
-    private boolean isGameOver() {
+    private boolean isSpawnBlocked() {
         for (int i = 0; i < staticBlocks.size(); i++) {
             if (staticBlocks.get(i).y <= MINO_START_Y) {
                 return true;
             }
         }
         return false;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
     }
 
     private void spawnNextMino() {

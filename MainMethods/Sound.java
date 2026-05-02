@@ -51,11 +51,44 @@ public class Sound {
             e.printStackTrace();
         }
     }
+
+    public void playAndLoop(int i) {
+        try {
+            if (i < 0 || i >= url.length || url[i] == null) {
+                return;
+            }
+
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(url[i]);
+            Clip clip = AudioSystem.getClip();
+            musicClip = clip;
+            clip.open(audioInputStream);
+            audioInputStream.close();
+            clip.loop(Clip.LOOP_CONTINUOUSLY);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void loop() {
         if (musicClip != null && musicClip.isOpen()) {
             musicClip.loop(Clip.LOOP_CONTINUOUSLY);
         }
     }
+
+    public void pause() {
+        if (musicClip != null && musicClip.isRunning()) {
+            musicClip.stop();
+        }
+    }
+
+    public void resume() {
+        if (musicClip != null && musicClip.isOpen() && !musicClip.isRunning()) {
+            musicClip.start();
+            musicClip.loop(Clip.LOOP_CONTINUOUSLY);
+        }
+    }
+
     public void stop() {
         if (musicClip != null) {
             musicClip.stop();

@@ -38,11 +38,10 @@ public class KeyHandler implements KeyListener {
             if (PausedGame){
                 PausedGame = false;
                 GamePanel.effect.play(3, false);
-                GamePanel.music.play(0, true);
-                GamePanel.music.loop();
+                GamePanel.music.resume();
             } else {
                 PausedGame = true;
-                GamePanel.music.stop();
+                GamePanel.music.pause();
             }
         }
     }

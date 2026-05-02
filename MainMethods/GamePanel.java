@@ -25,23 +25,31 @@ public class GamePanel extends JPanel implements Runnable{
 
         gameManager = new GameManager();
     }
-    public void lauchGame(){
+    public void launchGame(){
         gameThread = new Thread(this);
         gameThread.start();
 
-        music.play(0, true);
-        music.loop();
+        music.playAndLoop(0);
+    }
+
+    public void lauchGame(){
+        launchGame();
     }
     private void update(){
-        if (gameManager.gameOver && KeyHandler.restartPressed) {
+        if (gameManager.isGameOver() && KeyHandler.restartPressed) {
             gameManager = new GameManager();
             KeyHandler.restartPressed = false;
             KeyHandler.PausedGame = false;
-            music.play(0, true);
-            music.loop();
+            KeyHandler.leftPressed = false;
+            KeyHandler.rightPressed = false;
+            KeyHandler.downPressed = false;
+            KeyHandler.UpPressed = false;
+            KeyHandler.hardDropPressed = false;
+            KeyHandler.holdPressed = false;
+            music.playAndLoop(0);
         }
 
-        if (KeyHandler.PausedGame == false && !gameManager.gameOver) {
+        if (KeyHandler.PausedGame == false && !gameManager.isGameOver()) {
             gameManager.update();
         }
     }
