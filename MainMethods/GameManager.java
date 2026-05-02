@@ -99,9 +99,12 @@ public class GameManager {
                             staticBlocks.remove(i);
                         }
                     }
+                    for (int i = 0; i < staticBlocks.size();i++){
+                        if (staticBlocks.get(i).y < y){
+                            staticBlocks.get(i).y += Block.SIZE;
+                        }
+                    }
                 }
-
-
                 blockCount = 0;
                 x = left_x;
                 y += Block.SIZE;
