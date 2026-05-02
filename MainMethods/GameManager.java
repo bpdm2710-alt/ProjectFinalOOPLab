@@ -34,6 +34,10 @@ public class GameManager {
     int effectCounter;
     ArrayList<Integer> effectY = new ArrayList<>();
 
+    int level = 1;
+    int lines = 0;
+    int score = 0;
+
     public GameManager(){
         left_x = (GamePanel.WIDTH - WIDTH) / 2;
         right_x = left_x + WIDTH;
@@ -89,6 +93,7 @@ public class GameManager {
     }
     public void checkDelete() {
     int y = top_y;
+    int lineCount = 0;
 
     while (y < bottom_y) {
         int blockCount = 0;
@@ -111,6 +116,15 @@ public class GameManager {
                     staticBlocks.remove(i);
                 }
             }
+
+            lineCount++;
+            lines++;
+            // Drop speed - by tetr.io
+            // if the level increases, increase the drop speed speed
+            if (lines % 5 == 0) {
+                dropInterval = (int)(dropInterval * 0.8);
+            }
+
             // Drop blocks above down
             for (int i = 0; i < staticBlocks.size(); i++) {
                 if (staticBlocks.get(i).y < y) {
@@ -120,6 +134,11 @@ public class GameManager {
             // ✅ Don't advance y — recheck same row after blocks drop
         } else {
             y += Block.SIZE;
+        }
+
+        // Add score
+        if (lineCount > 0) {
+            score += lineCount * 100;
         }
     }
 }
@@ -132,13 +151,23 @@ public class GameManager {
 
         // preview area
         int x = right_x + 100;
-        int y = bottom_y - 550;
+        int y = bottom_y / 2 - 200;
         g2.setColor(Color.white);
         g2.setStroke(new BasicStroke(4f));
         g2.drawRect(x, y, 200, 500);
         g2.setFont(new Font("Arial", Font.PLAIN, 20));
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.drawString("NEXT", x + 70, y + 30);
+
+        // Draw Scores under preview area
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        g2.drawString("SCORE: " + (effectY.size() * 100), x, y + 550);
+        // Draw Level on the left of the gameplay area, automatically keep distance with the gameplay area when the level increases
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        g2.drawString("LEVEL: " + (effectY.size() / 5 + 1), left_x - 110, bottom_y - 50);
+        // Draw Lines Cleared on the left of the gameplay area under the Level, automatically keep distance with the gameplay area when the lines cleared increases
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        g2.drawString("LINES: " + effectY.size(), left_x - 110, bottom_y - 20);
 
         //draw current mino
         if(currentMino != null){
