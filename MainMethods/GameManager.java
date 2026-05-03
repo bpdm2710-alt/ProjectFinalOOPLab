@@ -162,6 +162,7 @@ public class GameManager {
     public void update() {
         if (KeyHandler.consumeHold()) {
             holdMino();
+            KeyHandler.consumeHardDrop(); // discard hard drop if hold was just processed in the same frame
         }
 
         if (KeyHandler.consumeHardDrop()) {
@@ -223,13 +224,13 @@ public class GameManager {
         }
 
         if (lineCount > 0) {
-            for (int i = 0; i < lineCount; i++) {
-                lines++;
-                if (lines % 5 == 0) {
-                    dropInterval = Math.max(MIN_DROP_INTERVAL_FRAMES, (int) (dropInterval * 0.8));
-                }
-            }
+            lines += lineCount;
             level = lines / 5 + 1;
+            // Tính số lần vượt mốc 5 trong batch này
+            int newLevelCrossings = lines / 5 - (lines - lineCount) / 5;
+            for (int i = 0; i < newLevelCrossings; i++) {
+                dropInterval = Math.max(MIN_DROP_INTERVAL_FRAMES, (int)(dropInterval * 0.8));
+            }
 
             for (int i = 0; i < staticBlocks.size(); i++) {
                 int shift = 0;
