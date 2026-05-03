@@ -8,8 +8,10 @@ import java.util.List;
 import mino.*;
 
 public class GameManager {
-    /** Visible next-piece previews below the large “next” mino (must match queue usage). */
-    static final int PREVIEW_COUNT = 3;
+    /**
+     * Pieces in {@link #previewQueue} drawn after the immediate next (UI shows next + this count = 5, tetr.io-style).
+     */
+    static final int PREVIEW_COUNT = 4;
 
     /** Minimum gravity interval (frames); avoids division issues and stuck loop at high level. */
     private static final int MIN_DROP_INTERVAL_FRAMES = 1;
@@ -38,6 +40,11 @@ public class GameManager {
 
     private final ArrayList<Block> staticBlocks = new ArrayList<>();
 
+    /**
+     * {@link #getStaticBlocks()} and {@link #addScore(int)} resolve through this handle.
+     * The project assumes one live session: a single {@link GameManager} owned by {@link GamePanel}.
+     * Constructing a second instance would repoint this field and orphan the previous game state.
+     */
     private static GameManager activeInstance;
 
     public static int dropInterval = 60;

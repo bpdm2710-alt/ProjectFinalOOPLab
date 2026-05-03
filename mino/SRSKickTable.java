@@ -21,9 +21,9 @@ public final class SRSKickTable {
 
     // I — clockwise
     private static final int[][] I_CW_01 = {{0, 0}, {-2, 0}, {1, 0}, {-2, -1}, {1, 2}};
-    private static final int[][] I_CW_12 = {{0, 0}, {-1, 0}, {2, 0}, {-1, 2}, {2, -2}};
+    private static final int[][] I_CW_12 = {{0, 0}, {-1, 0}, {2, 0}, {-1, 2}, {2, -1}};
     private static final int[][] I_CW_23 = {{0, 0}, {2, 0}, {-1, 0}, {2, 1}, {-1, -2}};
-    private static final int[][] I_CW_30 = {{0, 0}, {-2, 0}, {1, 0}, {-2, 1}, {1, -2}};
+    private static final int[][] I_CW_30 = {{0, 0}, {1, 0}, {-2, 0}, {1, -2}, {-2, 1}};
 
     // I — counter-clockwise
     private static final int[][] I_CCW_10 = {{0, 0}, {2, 0}, {-1, 0}, {2, -1}, {-1, 2}};
