@@ -20,15 +20,13 @@ final class GameRenderer {
     /** NEXT / HOLD panel width (px). */
     private static final int HUD_PANEL_W = 180;
     /** NEXT column outer height (must fit header + 5 preview rows). */
-    private static final int NEXT_PANEL_H = 400;
+    private static final int NEXT_PANEL_H = 480;
     /** HOLD panel outer height. */
     private static final int HOLD_PANEL_H = 180;
     /** Title row + divider (px from panel top to top of preview column). */
     private static final int HUD_HEADER_H = 28;
     /** Vertical gap between stacked NEXT preview rows. */
     private static final int NEXT_ROW_GAP = 6;
-    /** Inset from panel edge for divider line (px). */
-    private static final int HUD_DIVIDER_INSET = 12;
 
     void draw(GameManager gm, Graphics2D g2) {
         final int leftX = GameManager.left_x;
@@ -166,9 +164,9 @@ final class GameRenderer {
     }
 
     private void drawHudDivider(Graphics2D g2, int panelLeft, int lineY, int panelWidth) {
-        g2.setColor(new Color(130, 135, 145));
-        g2.setStroke(new BasicStroke(1f));
-        g2.drawLine(panelLeft + HUD_DIVIDER_INSET, lineY, panelLeft + panelWidth - HUD_DIVIDER_INSET, lineY);
+        g2.setColor(Color.white);
+        g2.setStroke(new BasicStroke(2f));
+        g2.drawLine(panelLeft, lineY, panelLeft + panelWidth, lineY);
     }
 
     private void drawGrid(Graphics2D g2, int leftX, int rightX, int topY, int bottomY) {
@@ -238,6 +236,9 @@ final class GameRenderer {
          * Same cell for every piece so blocks match the queue rows — no oversized I/HOLD vs thin S/J.
          */
         int cell = Math.min(innerW / 4, innerH / 2);
+        // Cap the preview piece size so it doesn't look clunky (slightly smaller than board blocks)
+        int maxCellSize = (int)(Block.SIZE * 0.85);
+        cell = Math.min(cell, maxCellSize);
         cell = Math.max(cell, 1);
 
         int pieceW = cols * cell;
