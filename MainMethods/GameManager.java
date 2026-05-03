@@ -87,7 +87,9 @@ public class GameManager {
         HOLDMINO_Y = top_y + 100;
 
         previewQueue.clear();
-        for (int i = 0; i < PREVIEW_COUNT + 2; i++) {
+        // Initialize queue with enough pieces for current, next, and previews
+        int initialSpawns = PREVIEW_COUNT + 2;
+        for (int i = 0; i < initialSpawns; i++) {
             previewQueue.add(MinoFactory.getRandomType());
         }
 
@@ -131,7 +133,8 @@ public class GameManager {
         MinoFactory.resetBag();
 
         previewQueue.clear();
-        for (int i = 0; i < PREVIEW_COUNT + 2; i++) {
+        int initialSpawns = PREVIEW_COUNT + 2;
+        for (int i = 0; i < initialSpawns; i++) {
             previewQueue.add(MinoFactory.getRandomType());
         }
 
@@ -181,9 +184,9 @@ public class GameManager {
             currentMino.deactivating = false;
             holdUsedInTurn = false;
 
-            spawnNextMino();
-
             checkDelete();
+
+            spawnNextMino();
         } else {
             currentMino.update();
         }
@@ -192,6 +195,7 @@ public class GameManager {
     public void checkDelete() {
         int y = top_y;
         int lineCount = 0;
+        ArrayList<Integer> linesToClear = new ArrayList<>();
 
         while (y < bottom_y) {
             int blockCount = 0;
@@ -203,9 +207,9 @@ public class GameManager {
             }
 
             if (blockCount == 10) {
-
                 effectCounterOn = true;
                 effectY.add(y);
+                linesToClear.add(y);
 
                 for (int i = staticBlocks.size() - 1; i > -1; i--) {
                     if (staticBlocks.get(i).y == y) {
@@ -214,23 +218,29 @@ public class GameManager {
                 }
 
                 lineCount++;
-                lines++;
-                level = lines / 5 + 1;
-                if (lines % 5 == 0) {
-                    dropInterval = Math.max(MIN_DROP_INTERVAL_FRAMES, (int) (dropInterval * 0.8));
-                }
-
-                for (int i = 0; i < staticBlocks.size(); i++) {
-                    if (staticBlocks.get(i).y < y) {
-                        staticBlocks.get(i).y += Block.SIZE;
-                    }
-                }
-            } else {
-                y += Block.SIZE;
             }
+            y += Block.SIZE;
         }
 
         if (lineCount > 0) {
+            for (int i = 0; i < lineCount; i++) {
+                lines++;
+                if (lines % 5 == 0) {
+                    dropInterval = Math.max(MIN_DROP_INTERVAL_FRAMES, (int) (dropInterval * 0.8));
+                }
+            }
+            level = lines / 5 + 1;
+
+            for (int i = 0; i < staticBlocks.size(); i++) {
+                int shift = 0;
+                for (int clearedY : linesToClear) {
+                    if (clearedY > staticBlocks.get(i).y) {
+                        shift++;
+                    }
+                }
+                staticBlocks.get(i).y += shift * Block.SIZE;
+            }
+
             GamePanel.effect.playEffect(1);
             score += scoringStrategy.calculate(lineCount, level);
         }
