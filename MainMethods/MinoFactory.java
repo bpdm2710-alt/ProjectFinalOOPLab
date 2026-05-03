@@ -40,24 +40,24 @@ public class MinoFactory {
         return currentBag.get(bagIndex++);
     }
 
-    public static Mino createByType(int type) {
+    public static Mino createByType(GameManager gm, int type) {
         switch (type) {
             case 0:
-                return new Mino_L();
+                return new Mino_L(gm);
             case 1:
-                return new Mino_J();
+                return new Mino_J(gm);
             case 2:
-                return new Mino_I();
+                return new Mino_I(gm);
             case 3:
-                return new Mino_O();
+                return new Mino_O(gm);
             case 4:
-                return new Mino_Z();
+                return new Mino_Z(gm);
             case 5:
-                return new Mino_T();
+                return new Mino_T(gm);
             case 6:
-                return new Mino_S();
+                return new Mino_S(gm);
             default:
-                return new Mino_O();
+                return new Mino_O(gm);
         }
     }
 }

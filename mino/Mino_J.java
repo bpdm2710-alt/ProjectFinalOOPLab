@@ -1,12 +1,14 @@
 package mino;
 import java.awt.Color;
+import MainMethods.GameManager;
 
 public class Mino_J extends Mino {
     // 
     // o
     // o o o
 
-    public Mino_J(){
+    public Mino_J(GameManager gm){
+        super(gm);
         create(Color.blue);
     }
 

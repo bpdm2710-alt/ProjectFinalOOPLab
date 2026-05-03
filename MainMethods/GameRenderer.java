@@ -83,7 +83,7 @@ final class GameRenderer {
                 continue;
             }
             int rowTop = nextColumnTop + i * (slotH + NEXT_ROW_GAP);
-            drawTetrominoPreview(g2, pieceType, previewX, rowTop, HUD_PANEL_W, slotH);
+            drawTetrominoPreview(gm, g2, pieceType, previewX, rowTop, HUD_PANEL_W, slotH);
         }
 
         if (gm.holdMinoType >= 0) {
@@ -92,7 +92,7 @@ final class GameRenderer {
             int holdColumnTop = holdY + HUD_HEADER_H + holdInnerPadTop;
             int holdColumnH = HOLD_PANEL_H - HUD_HEADER_H - holdInnerPadTop - holdInnerPadBottom;
             int holdSlotY = holdColumnTop + Math.max(0, (holdColumnH - slotH) / 2);
-            drawTetrominoPreview(g2, gm.holdMinoType, holdX, holdSlotY, HUD_PANEL_W, slotH);
+            drawTetrominoPreview(gm, g2, gm.holdMinoType, holdX, holdSlotY, HUD_PANEL_W, slotH);
         }
 
         g2.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -106,7 +106,7 @@ final class GameRenderer {
             gm.currentMino.draw(g2);
         }
 
-        List<Block> blocks = GameManager.getStaticBlocks();
+        List<Block> blocks = gm.getStaticBlocks();
         for (int i = 0; i < blocks.size(); i++) {
             blocks.get(i).draw(g2);
         }
@@ -205,11 +205,11 @@ final class GameRenderer {
      * Draws a tetromino scaled to fit the box. Uses a fresh piece at origin — preview queue
      * entries must not rely on board coordinates (those were unset or huge and broke scaling).
      */
-    private void drawTetrominoPreview(Graphics2D g2, int pieceType, int boxLeft, int boxTop, int boxW, int boxH) {
+    private void drawTetrominoPreview(GameManager gm, Graphics2D g2, int pieceType, int boxLeft, int boxTop, int boxW, int boxH) {
         if (pieceType < 0) {
             return;
         }
-        Mino m = MinoFactory.createByType(pieceType);
+        Mino m = MinoFactory.createByType(gm, pieceType);
         m.setXY(0, 0);
 
         int minBlockX = m.b[0].x;

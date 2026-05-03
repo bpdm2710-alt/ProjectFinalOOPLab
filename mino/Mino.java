@@ -10,6 +10,12 @@ public class Mino {
     /** Lock delay at 60 FPS ≈ 0.75 s (Tetris Guideline-style). */
     public static final int LOCK_DELAY_FRAMES = 45;
 
+    protected GameManager gm;
+
+    public Mino(GameManager gm) {
+        this.gm = gm;
+    }
+
     public Block b[] = new Block[4];
     public Block tempB[] = new Block[4];
     boolean leftCollision = false;
@@ -22,6 +28,8 @@ public class Mino {
     int autoDropCounter = 0;
     public int direction = 1; // 4 directions
     protected boolean lastRotationUsedKick;
+    protected boolean doing180 = false;
+    protected boolean wasDownCollision = false;
 
     /** SRS: 0 = O, 1 = I, 2 = JLSTZ */
     protected int srsPieceKind() {
@@ -40,6 +48,15 @@ public class Mino {
     }
     public void setXY(int x, int y){}
     public boolean updateXY(int newDirection) {
+        if (doing180) {
+            if (canPlaceTempBlocks(0, 0)) {
+                applyTempBlocks(newDirection, 0, 0);
+                lastRotationUsedKick = false;
+                return true;
+            }
+            return false;
+        }
+
         int oldState = direction - 1;
         int newState = newDirection - 1;
 
@@ -92,7 +109,7 @@ public class Mino {
         }
     }
     public void checkStaticBlockCollision(){
-        java.util.List<Block> staticBlocks = GameManager.getStaticBlocks();
+        java.util.List<Block> staticBlocks = gm.getStaticBlocks();
         for (int i = 0; i < staticBlocks.size(); i++){
             int TargetX = staticBlocks.get(i).x;
             int TargetY = staticBlocks.get(i).y;
@@ -142,7 +159,7 @@ public class Mino {
                 b[2].y += Block.SIZE;
                 b[3].y += Block.SIZE;
                 autoDropCounter = 0;
-                GameManager.addScore(1);
+                gm.addScore(1);
             }
         }
         if (KeyHandler.consumeRotateClockwise()) {
@@ -165,10 +182,11 @@ public class Mino {
         checkMovementCollision();
 
         if(downCollision){
-            if (deactivating == false){
+            if (deactivating == false && !wasDownCollision){
                 GamePanel.effect.playEffect(4);
             }
             deactivating = true;
+            wasDownCollision = true;
         }
         else {
             deactivating = false;
@@ -181,6 +199,7 @@ public class Mino {
             b[3].y += Block.SIZE;
             autoDropCounter = 0;
             }
+            wasDownCollision = false;
         }
     }
     public void deactivating(){
@@ -240,48 +259,26 @@ public class Mino {
     }
 
     public boolean rotateHalfTurn() {
-        // Save original state
         int oldDirection = direction;
-        int[] oldX = new int[b.length];
-        int[] oldY = new int[b.length];
-        for (int i = 0; i < b.length; i++) {
-            oldX[i] = b[i].x;
-            oldY[i] = b[i].y;
-        }
-
-        // FIXED: Rotate 180 degrees properly
-        // Method: Try both CW and CCW approaches to find valid 180-degree rotation
-        // First attempt: CW + CW
-        boolean first = rotateClockwise();
-        boolean second = first && rotateClockwise();
-
-        if (second) {
-            // Success: 180-degree rotation with wall kicks applied
-            return true;
-        }
-
-        // If CW+CW failed, try CCW+CCW (sometimes finds different wall kick solutions)
-        direction = oldDirection;
-        for (int i = 0; i < b.length; i++) {
-            b[i].x = oldX[i];
-            b[i].y = oldY[i];
+        doing180 = true;
+        
+        switch (direction) {
+            case 1:
+                getDirection3();
+                break;
+            case 2:
+                getDirection4();
+                break;
+            case 3:
+                getDirection1();
+                break;
+            case 4:
+                getDirection2();
+                break;
         }
         
-        boolean firstCCW = rotateCounterClockwise();
-        boolean secondCCW = firstCCW && rotateCounterClockwise();
-        
-        if (secondCCW) {
-            // Success: 180-degree rotation via CCW+CCW
-            return true;
-        }
-
-        // Both methods failed, restore and return false
-        direction = oldDirection;
-        for (int i = 0; i < b.length; i++) {
-            b[i].x = oldX[i];
-            b[i].y = oldY[i];
-        }
-        return false;
+        doing180 = false;
+        return direction != oldDirection;
     }
 
     private boolean canPlaceTempBlocks(int offsetX, int offsetY) {
@@ -306,7 +303,7 @@ public class Mino {
             }
 
             // Check static block collisions
-            java.util.List<Block> staticBlocks = GameManager.getStaticBlocks();
+            java.util.List<Block> staticBlocks = gm.getStaticBlocks();
             for (int j = 0; j < staticBlocks.size(); j++) {
                 Block staticBlock = staticBlocks.get(j);
                 if (nextX == staticBlock.x && nextY == staticBlock.y) {

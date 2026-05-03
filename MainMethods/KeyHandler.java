@@ -18,6 +18,7 @@ public class KeyHandler implements KeyListener {
     private static final AtomicBoolean hardDropPressed = new AtomicBoolean(false);
     private static final AtomicBoolean holdPressed = new AtomicBoolean(false);
     private static final AtomicBoolean restartPressed = new AtomicBoolean(false);
+    private static final AtomicBoolean pausePressed = new AtomicBoolean(false);
 
     public static boolean consumeLeft() {
         return leftPressed.getAndSet(false);
@@ -55,6 +56,10 @@ public class KeyHandler implements KeyListener {
         return restartPressed.getAndSet(false);
     }
 
+    public static boolean consumePause() {
+        return pausePressed.getAndSet(false);
+    }
+
     /** Clears one-shot action flags (e.g. after restart). */
     public static void resetTransientInput() {
         leftPressed.set(false);
@@ -66,6 +71,7 @@ public class KeyHandler implements KeyListener {
         hardDropPressed.set(false);
         holdPressed.set(false);
         restartPressed.set(false);
+        pausePressed.set(false);
     }
 
     @Override
@@ -103,7 +109,7 @@ public class KeyHandler implements KeyListener {
             restartPressed.set(true);
         }
         if (code == KeyEvent.VK_P) {
-            GamePanel.togglePause();
+            pausePressed.set(true);
         }
     }
 

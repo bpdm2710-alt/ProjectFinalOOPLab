@@ -1,11 +1,13 @@
 package mino;
 import java.awt.Color;
+import MainMethods.GameManager;
 
 public class Mino_I extends Mino {
     // 
     // o o o o
     // 
-    public Mino_I(){
+    public Mino_I(GameManager gm){
+        super(gm);
         create(Color.cyan);
     }
 

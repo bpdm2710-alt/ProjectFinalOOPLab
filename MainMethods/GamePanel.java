@@ -14,13 +14,8 @@ public class GamePanel extends JPanel implements Runnable{
     GameManager gameManager;
     public static Sound music = new Sound();
     public static Sound effect = new Sound();
-    private static GamePanel instance;
 
     public GamePanel(){
-        if (instance != null) {
-            throw new RuntimeException("GamePanel is a singleton and should only be instantiated once");
-        }
-        instance = this;
         this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         this.setBackground(Color.black);
         this.setLayout(null);
@@ -37,29 +32,29 @@ public class GamePanel extends JPanel implements Runnable{
         music.playAndLoop(0);
     }
 
-    public static void togglePause(){
-        if (instance == null || instance.gameManager.getState() == GameState.GAME_OVER) {
+    public void togglePause(){
+        if (gameManager.getState() == GameState.GAME_OVER) {
             return;
         }
 
-        instance.gameManager.togglePause();
-        if (instance.gameManager.getState() == GameState.PAUSED) {
+        gameManager.togglePause();
+        if (gameManager.getState() == GameState.PAUSED) {
             music.pause();
         } else {
             music.resume();
         }
     }
 
-    public static void restartGame(){
-        if (instance == null) {
-            return;
-        }
-
-        instance.gameManager.restartGame();
+    public void restartGame(){
+        gameManager.restartGame();
         music.playAndLoop(0);
     }
 
     private void update(){
+        if (KeyHandler.consumePause()) {
+            togglePause();
+        }
+
         if (gameManager.getState() != GameState.GAME_OVER) {
             KeyHandler.consumeRestart();
         }

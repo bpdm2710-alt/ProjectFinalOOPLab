@@ -1,9 +1,11 @@
 package mino;
 
 import java.awt.Color;
+import MainMethods.GameManager;
 
 public class Mino_L extends Mino {
-    public Mino_L(){
+    public Mino_L(GameManager gm){
+        super(gm);
         create(Color.orange);
     }
     public void setXY(int x, int y){

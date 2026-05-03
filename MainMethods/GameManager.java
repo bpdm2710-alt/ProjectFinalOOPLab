@@ -41,18 +41,15 @@ public class GameManager {
     private final ArrayList<Block> staticBlocks = new ArrayList<>();
 
     /**
-     * {@link #getStaticBlocks()} and {@link #addScore(int)} resolve through this handle.
      * The project assumes one live session: a single {@link GameManager} owned by {@link GamePanel}.
-     * Constructing a second instance would repoint this field and orphan the previous game state.
      */
-    private static GameManager activeInstance;
 
     public static int dropInterval = 60;
 
     // Line clear effect - shorter duration for cleaner animation
     boolean effectCounterOn;
     int effectCounter;
-    ArrayList<Integer> effectY = new ArrayList<>();
+    java.util.concurrent.CopyOnWriteArrayList<Integer> effectY = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     int level = 1;
     int lines = 0;
@@ -68,7 +65,6 @@ public class GameManager {
     private final GameRenderer gameRenderer = new GameRenderer();
 
     public GameManager() {
-        activeInstance = this;
         dropInterval = 60;
         staticBlocks.clear();
         MinoFactory.resetBag();
@@ -96,23 +92,20 @@ public class GameManager {
         currentMinoType = previewQueue.poll();
         nextMinoType = previewQueue.poll();
 
-        currentMino = MinoFactory.createByType(currentMinoType);
+        currentMino = MinoFactory.createByType(this, currentMinoType);
         currentMino.setXY(MINO_START_X, MINO_START_Y);
-        nextMino = MinoFactory.createByType(nextMinoType);
+        nextMino = MinoFactory.createByType(this, nextMinoType);
         nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
     }
 
-    public static List<Block> getStaticBlocks() {
-        if (activeInstance == null) {
-            return Collections.emptyList();
-        }
-        return Collections.unmodifiableList(activeInstance.staticBlocks);
+    public List<Block> getStaticBlocks() {
+        return Collections.unmodifiableList(staticBlocks);
     }
 
     /** Guideline-style soft/hard drop bonus (lines still use {@link GuidelineScoring}). */
-    public static void addScore(int points) {
-        if (activeInstance != null && activeInstance.state == GameState.PLAYING && points != 0) {
-            activeInstance.score += points;
+    public void addScore(int points) {
+        if (state == GameState.PLAYING && points != 0) {
+            score += points;
         }
     }
 
@@ -141,9 +134,9 @@ public class GameManager {
         currentMinoType = previewQueue.poll();
         nextMinoType = previewQueue.poll();
 
-        currentMino = MinoFactory.createByType(currentMinoType);
+        currentMino = MinoFactory.createByType(this, currentMinoType);
         currentMino.setXY(MINO_START_X, MINO_START_Y);
-        nextMino = MinoFactory.createByType(nextMinoType);
+        nextMino = MinoFactory.createByType(this, nextMinoType);
         nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
     }
 
@@ -175,17 +168,17 @@ public class GameManager {
             staticBlocks.add(currentMino.b[2]);
             staticBlocks.add(currentMino.b[3]);
 
+            currentMino.deactivating = false;
+            holdUsedInTurn = false;
+
+            checkDelete();
+
             if (isSpawnBlocked()) {
                 state = GameState.GAME_OVER;
                 GamePanel.music.stop();
                 GamePanel.effect.playEffect(2);
                 return;
             }
-
-            currentMino.deactivating = false;
-            holdUsedInTurn = false;
-
-            checkDelete();
 
             spawnNextMino();
         } else {
@@ -194,7 +187,7 @@ public class GameManager {
     }
 
     public void checkDelete() {
-        int y = top_y;
+        int y = top_y - BUFFER_ROWS * Block.SIZE;
         int lineCount = 0;
         ArrayList<Integer> linesToClear = new ArrayList<>();
 
@@ -226,11 +219,9 @@ public class GameManager {
         if (lineCount > 0) {
             lines += lineCount;
             level = lines / 5 + 1;
-            // Tính số lần vượt mốc 5 trong batch này
-            int newLevelCrossings = lines / 5 - (lines - lineCount) / 5;
-            for (int i = 0; i < newLevelCrossings; i++) {
-                dropInterval = Math.max(MIN_DROP_INTERVAL_FRAMES, (int)(dropInterval * 0.8));
-            }
+            
+            double secondsPerRow = Math.pow(Math.max(0.01, 0.8 - ((level - 1) * 0.007)), level - 1);
+            dropInterval = Math.max(1, (int)(secondsPerRow * 60));
 
             for (int i = 0; i < staticBlocks.size(); i++) {
                 int shift = 0;
@@ -251,15 +242,36 @@ public class GameManager {
         gameRenderer.draw(this, g2);
     }
 
-    /**
-     * Game over only if the next tetromino cannot spawn: any of its spawn cells overlap locked blocks.
-     */
     private boolean isSpawnBlocked() {
-        Mino test = MinoFactory.createByType(nextMinoType);
-        test.setXY(MINO_START_X, MINO_START_Y);
-        for (int i = 0; i < test.b.length; i++) {
+        int x = MINO_START_X;
+        int y = MINO_START_Y;
+        int s = Block.SIZE;
+        
+        int[] tx = new int[4];
+        int[] ty = new int[4];
+        
+        switch(nextMinoType) {
+            case 0: // L
+                tx[0]=x; ty[0]=y; tx[1]=x-s; ty[1]=y; tx[2]=x+s; ty[2]=y; tx[3]=x+s; ty[3]=y-s; break;
+            case 1: // J
+                tx[0]=x; ty[0]=y; tx[1]=x+s; ty[1]=y; tx[2]=x-s; ty[2]=y; tx[3]=x-s; ty[3]=y-s; break;
+            case 2: // I
+                tx[0]=x; ty[0]=y; tx[1]=x-s; ty[1]=y; tx[2]=x+s; ty[2]=y; tx[3]=x+s*2; ty[3]=y; break;
+            case 3: // O
+                tx[0]=x; ty[0]=y; tx[1]=x; ty[1]=y+s; tx[2]=x+s; ty[2]=y; tx[3]=x+s; ty[3]=y+s; break;
+            case 4: // Z
+                tx[0]=x; ty[0]=y; tx[1]=x+s; ty[1]=y; tx[2]=x; ty[2]=y-s; tx[3]=x-s; ty[3]=y-s; break;
+            case 5: // T
+                tx[0]=x; ty[0]=y; tx[1]=x; ty[1]=y-s; tx[2]=x-s; ty[2]=y; tx[3]=x+s; ty[3]=y; break;
+            case 6: // S
+                tx[0]=x; ty[0]=y; tx[1]=x+s; ty[1]=y; tx[2]=x-s; ty[2]=y+s; tx[3]=x; ty[3]=y+s; break;
+            default:
+                tx[0]=x; ty[0]=y; tx[1]=x; ty[1]=y+s; tx[2]=x+s; ty[2]=y; tx[3]=x+s; ty[3]=y+s; break;
+        }
+        
+        for (int i = 0; i < 4; i++) {
             for (int j = 0; j < staticBlocks.size(); j++) {
-                if (test.b[i].x == staticBlocks.get(j).x && test.b[i].y == staticBlocks.get(j).y) {
+                if (tx[i] == staticBlocks.get(j).x && ty[i] == staticBlocks.get(j).y) {
                     return true;
                 }
             }
@@ -273,13 +285,13 @@ public class GameManager {
 
     private void spawnNextMino() {
         currentMinoType = nextMinoType;
-        currentMino = MinoFactory.createByType(currentMinoType);
+        currentMino = MinoFactory.createByType(this, currentMinoType);
         currentMino.setXY(MINO_START_X, MINO_START_Y);
 
         nextMinoType = previewQueue.poll();
         previewQueue.add(MinoFactory.getRandomType());
 
-        nextMino = MinoFactory.createByType(nextMinoType);
+        nextMino = MinoFactory.createByType(this, nextMinoType);
         nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
     }
 
@@ -295,11 +307,11 @@ public class GameManager {
             int swapType = currentMinoType;
             currentMinoType = holdMinoType;
             holdMinoType = swapType;
-            currentMino = MinoFactory.createByType(currentMinoType);
+            currentMino = MinoFactory.createByType(this, currentMinoType);
             currentMino.setXY(MINO_START_X, MINO_START_Y);
         }
 
-        holdMino = MinoFactory.createByType(holdMinoType);
+        holdMino = MinoFactory.createByType(this, holdMinoType);
         holdMino.setXY(HOLDMINO_X, HOLDMINO_Y);
         holdUsedInTurn = true;
     }
@@ -313,8 +325,7 @@ public class GameManager {
         for (int i = 0; i < currentMino.b.length; i++) {
             currentMino.b[i].y += dropDistance * Block.SIZE;
         }
-
-        GameManager.addScore(2 * dropDistance);
+        this.addScore(2 * dropDistance);
 
         currentMino.deactivating = false;
         currentMino.activeMino = false;

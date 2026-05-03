@@ -1,10 +1,12 @@
 package mino;
 import java.awt.Color;
+import MainMethods.GameManager;
 
 public class Mino_Z extends Mino {
     // o o
     //   o o
-    public Mino_Z(){
+    public Mino_Z(GameManager gm){
+        super(gm);
         create(Color.RED);
     }
     public void setXY(int x, int y){
