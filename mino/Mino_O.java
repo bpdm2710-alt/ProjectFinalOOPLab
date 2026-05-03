@@ -8,6 +8,11 @@ public class Mino_O extends Mino {
         create(Color.yellow);
     }
 
+    @Override
+    protected int srsPieceKind() {
+        return 0;
+    }
+
     public void setXY(int x, int y){
         b[0].x = x;
         b[0].y = y;
