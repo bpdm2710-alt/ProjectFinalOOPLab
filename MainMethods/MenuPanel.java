@@ -101,7 +101,6 @@ public class MenuPanel extends JPanel {
         int btnW = 380;
         int btnH = 62;
         int gap  = 18;
-        int totalH = BTN_LABELS.length * btnH + (BTN_LABELS.length - 1) * gap;
         int startX = (w - btnW) / 2;
         int startY = h / 2 - 10;
 

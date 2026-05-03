@@ -29,8 +29,8 @@ final class GameRenderer {
     private static final int NEXT_ROW_GAP = 6;
 
     void draw(GameManager gm, Graphics2D g2) {
-        final int leftX = GameManager.left_x;
-        final int rightX = GameManager.right_x;
+        final int leftX = gm.left_x;
+        final int rightX = gm.right_x;
         final int topY = gm.top_y;
         final int bottomY = gm.bottom_y;
         final int width = gm.WIDTH;
@@ -112,8 +112,6 @@ final class GameRenderer {
         }
 
         if (gm.effectCounterOn) {
-            gm.effectCounter++;
-
             int maxDuration = 15;
             float alpha = 1.0f - (float) gm.effectCounter / maxDuration;
 
@@ -121,12 +119,6 @@ final class GameRenderer {
                 int yEffect = gm.effectY.get(i);
                 g2.setColor(new Color(1.0f, 1.0f, 0.0f, Math.max(0, alpha)));
                 g2.fillRect(leftX, yEffect, width, Block.SIZE);
-            }
-
-            if (gm.effectCounter >= maxDuration) {
-                gm.effectCounter = 0;
-                gm.effectCounterOn = false;
-                gm.effectY.clear();
             }
         }
 

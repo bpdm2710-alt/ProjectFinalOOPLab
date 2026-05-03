@@ -102,17 +102,17 @@ public class Mino {
         downCollision = false;
         checkStaticBlockCollision();
         for (int i = 0; i < b.length; i++){
-            if (b[i].x == GameManager.left_x){
+            if (b[i].x == gm.left_x){
                 leftCollision = true;
             }
         }
         for (int i = 0; i < b.length; i++){
-            if (b[i].x + Block.SIZE == GameManager.right_x){
+            if (b[i].x + Block.SIZE == gm.right_x){
                 rightCollision = true;
             }
         }
         for (int i = 0; i < b.length; i++){
-            if (b[i].y + Block.SIZE == GameManager.bottom_y){
+            if (b[i].y + Block.SIZE == gm.bottom_y){
                 downCollision = true;
             }
         }
@@ -152,12 +152,10 @@ public class Mino {
                         b[0].x -= Block.SIZE; b[1].x -= Block.SIZE; b[2].x -= Block.SIZE; b[3].x -= Block.SIZE;
                         checkMovementCollision();
                         manipulated = true;
-                        autoDropCounter = 0;
                     }
                 } else if (!leftCollision) {
                     b[0].x -= Block.SIZE; b[1].x -= Block.SIZE; b[2].x -= Block.SIZE; b[3].x -= Block.SIZE;
                     manipulated = true;
-                    autoDropCounter = 0;
                 }
             }
             dasLeftCounter++;
@@ -174,12 +172,10 @@ public class Mino {
                         b[0].x += Block.SIZE; b[1].x += Block.SIZE; b[2].x += Block.SIZE; b[3].x += Block.SIZE;
                         checkMovementCollision();
                         manipulated = true;
-                        autoDropCounter = 0;
                     }
                 } else if (!rightCollision) {
                     b[0].x += Block.SIZE; b[1].x += Block.SIZE; b[2].x += Block.SIZE; b[3].x += Block.SIZE;
                     manipulated = true;
-                    autoDropCounter = 0;
                 }
             }
             dasRightCounter++;
@@ -245,7 +241,7 @@ public class Mino {
             deactivating = false;
             deactivateCounter = 0;
             autoDropCounter++;
-            if (autoDropCounter == GameManager.dropInterval){
+            if (autoDropCounter == gm.dropInterval){
             b[0].y += Block.SIZE;
             b[1].y += Block.SIZE;
             b[2].y += Block.SIZE;
@@ -345,13 +341,13 @@ public class Mino {
             int nextY = tempB[i].y + offsetY * Block.SIZE;
 
             // Check boundary collisions
-            if (nextX < GameManager.left_x) {
+            if (nextX < gm.left_x) {
                 leftCollision = true;
             }
-            if (nextX + Block.SIZE > GameManager.right_x) {
+            if (nextX + Block.SIZE > gm.right_x) {
                 rightCollision = true;
             }
-            if (nextY + Block.SIZE > GameManager.bottom_y) {
+            if (nextY + Block.SIZE > gm.bottom_y) {
                 downCollision = true;
             }
 

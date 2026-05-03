@@ -22,10 +22,10 @@ public class GameManager {
     final int BUFFER_ROWS = 20; // Hidden rows above for spawn zone
     final int TOTAL_ROWS = 40;  // Total internal rows
 
-    public static int left_x;
-    public static int right_x;
-    public static int top_y;
-    public static int bottom_y;
+    public int left_x;
+    public int right_x;
+    public int top_y;
+    public int bottom_y;
 
     Mino currentMino;
     final int MINO_START_X;
@@ -44,7 +44,7 @@ public class GameManager {
      * The project assumes one live session: a single {@link GameManager} owned by {@link GamePanel}.
      */
 
-    public static int dropInterval = 60;
+    public int dropInterval = 60;
 
     // Line clear effect - shorter duration for cleaner animation
     boolean effectCounterOn;
@@ -66,7 +66,7 @@ public class GameManager {
     private final GameRenderer gameRenderer = new GameRenderer();
 
     public GameManager() {
-        dropInterval = 60;
+        this.dropInterval = 60;
         staticBlocks.clear();
         MinoFactory.resetBag();
 
@@ -154,6 +154,16 @@ public class GameManager {
     }
 
     public void update() {
+        // Update line clear animation (kept out of renderer to avoid state mutation in paint)
+        if (effectCounterOn) {
+            effectCounter++;
+            if (effectCounter >= 15) {
+                effectCounter = 0;
+                effectCounterOn = false;
+                effectY.clear();
+            }
+        }
+
         if (KeyHandler.consumeHold()) {
             holdMino();
             KeyHandler.consumeHardDrop(); // discard hard drop if hold was just processed in the same frame
