@@ -60,6 +60,7 @@ public class GamePanel extends JPanel implements Runnable{
     }
 
     private void update(){
+<<<<<<< HEAD
         // FIX #1: Reset restartPressed if game is NOT in GAME_OVER state
         // This prevents R key from being held over into game over state
         if (KeyHandler.restartPressed.get() && gameManager.getState() != GameState.GAME_OVER) {
@@ -67,6 +68,14 @@ public class GamePanel extends JPanel implements Runnable{
         }
 
         if (gameManager.getState() == GameState.GAME_OVER && KeyHandler.restartPressed.getAndSet(false)) {
+=======
+        // Discard R unless we're on the game-over screen (avoid buffered restart)
+        if (gameManager.getState() != GameState.GAME_OVER) {
+            KeyHandler.consumeRestart();
+        }
+
+        if (gameManager.getState() == GameState.GAME_OVER && KeyHandler.consumeRestart()) {
+>>>>>>> c0d029263a687911de201d4d08322d168074970c
             restartGame();
             KeyHandler.resetTransientInput();
         }

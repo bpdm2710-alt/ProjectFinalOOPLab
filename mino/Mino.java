@@ -7,6 +7,9 @@ import MainMethods.GamePanel;
 import MainMethods.KeyHandler;
 
 public class Mino {
+    /** Lock delay at 60 FPS ≈ 0.75 s (Tetris Guideline-style). */
+    public static final int LOCK_DELAY_FRAMES = 45;
+
     public Block b[] = new Block[4];
     public Block tempB[] = new Block[4];
     boolean leftCollision = false;
@@ -39,6 +42,7 @@ public class Mino {
         tempB[3] = new Block(c);
     }
     public void setXY(int x, int y){}
+<<<<<<< HEAD
     public boolean updateXY(int newDirection) {
         int oldState = direction - 1;
         int newState = newDirection - 1;
@@ -51,6 +55,10 @@ public class Mino {
         } else {
             kicks = SRSKickTable.getJLSTZKicks(oldState, newState);
         }
+=======
+    public boolean updateXY(int newDirection, int oldDirection) {
+        int[][] kicks = MainMethods.SrsKickTable.getKicks(this, oldDirection, newDirection);
+>>>>>>> c0d029263a687911de201d4d08322d168074970c
 
         for (int i = 0; i < kicks.length; i++) {
             if (canPlaceTempBlocks(kicks[i][0], kicks[i][1])) {
@@ -117,7 +125,11 @@ public class Mino {
         }
         checkMovementCollision();
 
+<<<<<<< HEAD
         if (KeyHandler.leftPressed.getAndSet(false)) {
+=======
+        if (KeyHandler.consumeLeft()) {
+>>>>>>> c0d029263a687911de201d4d08322d168074970c
             if (!leftCollision) {
                 b[0].x -= Block.SIZE;
                 b[1].x -= Block.SIZE;
@@ -126,7 +138,11 @@ public class Mino {
                 autoDropCounter = 0;
             }
         }
+<<<<<<< HEAD
         if (KeyHandler.rightPressed.getAndSet(false)) {
+=======
+        if (KeyHandler.consumeRight()) {
+>>>>>>> c0d029263a687911de201d4d08322d168074970c
             if (!rightCollision) {
                 b[0].x += Block.SIZE;
                 b[1].x += Block.SIZE;
@@ -135,27 +151,46 @@ public class Mino {
                 autoDropCounter = 0;
             }
         }
+<<<<<<< HEAD
         if (KeyHandler.downPressed.getAndSet(false)) {
+=======
+        if (KeyHandler.consumeDown()) {
+>>>>>>> c0d029263a687911de201d4d08322d168074970c
             if (!downCollision) {
                 b[0].y += Block.SIZE;
                 b[1].y += Block.SIZE;
                 b[2].y += Block.SIZE;
                 b[3].y += Block.SIZE;
                 autoDropCounter = 0;
+<<<<<<< HEAD
                 GameManager.addScore(1); // soft drop
             }
         }
         if (KeyHandler.rotateClockwisePressed.getAndSet(false)) {
+=======
+                GameManager.addScore(1); // Guideline: soft drop +1 per row
+            }
+        }
+        if (KeyHandler.consumeRotateClockwise()) {
+>>>>>>> c0d029263a687911de201d4d08322d168074970c
             if (rotateClockwise()) {
                 GamePanel.effect.playEffect(3);
             }
         }
+<<<<<<< HEAD
         if (KeyHandler.rotateCounterClockwisePressed.getAndSet(false)) {
+=======
+        if (KeyHandler.consumeRotateCounterClockwise()) {
+>>>>>>> c0d029263a687911de201d4d08322d168074970c
             if (rotateCounterClockwise()) {
                 GamePanel.effect.playEffect(3);
             }
         }
+<<<<<<< HEAD
         if (KeyHandler.rotateHalfTurnPressed.getAndSet(false)) {
+=======
+        if (KeyHandler.consumeRotateHalfTurn()) {
+>>>>>>> c0d029263a687911de201d4d08322d168074970c
             if (rotateHalfTurn()) {
                 GamePanel.effect.playEffect(3);
             }
