@@ -7,6 +7,9 @@ import MainMethods.GamePanel;
 import MainMethods.KeyHandler;
 
 public class Mino {
+    /** Lock delay at 60 FPS ≈ 0.75 s (Tetris Guideline-style). */
+    public static final int LOCK_DELAY_FRAMES = 45;
+
     public Block b[] = new Block[4];
     public Block tempB[] = new Block[4];
     boolean leftCollision = false;
@@ -32,14 +35,12 @@ public class Mino {
         tempB[3] = new Block(c);
     }
     public void setXY(int x, int y){}
-    public boolean updateXY(int direction){
-        int[][] kicks = {
-            {0, 0}, {1, 0}, {-1, 0}, {2, 0}, {-2, 0}, {0, -1}, {0, -2}, {1, -1}, {-1, -1}
-        };
+    public boolean updateXY(int newDirection, int oldDirection) {
+        int[][] kicks = MainMethods.SrsKickTable.getKicks(this, oldDirection, newDirection);
 
         for (int i = 0; i < kicks.length; i++) {
             if (canPlaceTempBlocks(kicks[i][0], kicks[i][1])) {
-                applyTempBlocks(direction, kicks[i][0], kicks[i][1]);
+                applyTempBlocks(newDirection, kicks[i][0], kicks[i][1]);
                 lastRotationUsedKick = kicks[i][0] != 0 || kicks[i][1] != 0;
                 return true;
             }
@@ -77,9 +78,10 @@ public class Mino {
         }
     }
     public void checkStaticBlockCollision(){
-        for (int i = 0; i < GameManager.staticBlocks.size(); i++){
-            int TargetX = GameManager.staticBlocks.get(i).x;
-            int TargetY = GameManager.staticBlocks.get(i).y;
+        java.util.List<Block> staticBlocks = GameManager.getStaticBlocks();
+        for (int i = 0; i < staticBlocks.size(); i++){
+            int TargetX = staticBlocks.get(i).x;
+            int TargetY = staticBlocks.get(i).y;
 
             for (int j = 0; j < b.length; j++){
                 if (b[j].x == TargetX && b[j].y + Block.SIZE == TargetY){
@@ -101,53 +103,48 @@ public class Mino {
         }
         checkMovementCollision();
 
-        if (KeyHandler.leftPressed){
-            if (!leftCollision){
+        if (KeyHandler.consumeLeft()) {
+            if (!leftCollision) {
                 b[0].x -= Block.SIZE;
                 b[1].x -= Block.SIZE;
                 b[2].x -= Block.SIZE;
                 b[3].x -= Block.SIZE;
-            autoDropCounter = 0;
+                autoDropCounter = 0;
             }
-            KeyHandler.leftPressed = false;
         }
-        if(KeyHandler.rightPressed){
-            if (!rightCollision){
+        if (KeyHandler.consumeRight()) {
+            if (!rightCollision) {
                 b[0].x += Block.SIZE;
                 b[1].x += Block.SIZE;
                 b[2].x += Block.SIZE;
                 b[3].x += Block.SIZE;
                 autoDropCounter = 0;
             }
-            KeyHandler.rightPressed = false;
         }
-        if(KeyHandler.downPressed){
-            if (!downCollision){
+        if (KeyHandler.consumeDown()) {
+            if (!downCollision) {
                 b[0].y += Block.SIZE;
                 b[1].y += Block.SIZE;
                 b[2].y += Block.SIZE;
                 b[3].y += Block.SIZE;
                 autoDropCounter = 0;
+                GameManager.addScore(1); // Guideline: soft drop +1 per row
             }
-            KeyHandler.downPressed = false;
         }
-        if (KeyHandler.rotateClockwisePressed) {
+        if (KeyHandler.consumeRotateClockwise()) {
             if (rotateClockwise()) {
                 GamePanel.effect.playEffect(3);
             }
-            KeyHandler.rotateClockwisePressed = false;
         }
-        if (KeyHandler.rotateCounterClockwisePressed) {
+        if (KeyHandler.consumeRotateCounterClockwise()) {
             if (rotateCounterClockwise()) {
                 GamePanel.effect.playEffect(3);
             }
-            KeyHandler.rotateCounterClockwisePressed = false;
         }
-        if (KeyHandler.rotateHalfTurnPressed) {
+        if (KeyHandler.consumeRotateHalfTurn()) {
             if (rotateHalfTurn()) {
                 GamePanel.effect.playEffect(3);
             }
-            KeyHandler.rotateHalfTurnPressed = false;
         }
 
         // Re-check after movement so lock logic uses the current position.
@@ -174,7 +171,7 @@ public class Mino {
     }
     public void deactivating(){
         deactivateCounter++;
-        if (deactivateCounter >= 45){
+        if (deactivateCounter >= LOCK_DELAY_FRAMES) {
             checkMovementCollision();
             if(downCollision){
                 activeMino = false;
@@ -295,8 +292,9 @@ public class Mino {
             }
 
             // Check static block collisions
-            for (int j = 0; j < GameManager.staticBlocks.size(); j++) {
-                Block staticBlock = GameManager.staticBlocks.get(j);
+            java.util.List<Block> staticBlocks = GameManager.getStaticBlocks();
+            for (int j = 0; j < staticBlocks.size(); j++) {
+                Block staticBlock = staticBlocks.get(j);
                 if (nextX == staticBlock.x && nextY == staticBlock.y) {
                     // FIX #2: Block occupies exact position - cannot place here
                     // Use downCollision as general "blocked" flag

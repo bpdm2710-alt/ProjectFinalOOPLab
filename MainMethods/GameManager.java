@@ -6,6 +6,8 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import mino.*;
 
@@ -29,13 +31,30 @@ public class GameManager {
     final int NEXTMINO_Y;
     final int HOLDMINO_X;
     final int HOLDMINO_Y;
-    
-    // Preview queue (3-5 next pieces)
+
+    /** Visible “bag” of upcoming types below the large NEXT preview (must match queue fills). */
+    private static final int PREVIEW_COUNT = 3;
+    /** Speed curve floor so gravity stays playable at high level. */
+    private static final int MIN_DROP_INTERVAL = 1;
+
     private java.util.Queue<Integer> previewQueue = new java.util.LinkedList<>();
-    
-    public static ArrayList<Block> staticBlocks = new ArrayList<>();
+
+    private static final ArrayList<Block> staticBlocks = new ArrayList<>();
+
+    /** Last GameManager constructed — used for score from {@link mino.Mino}. */
+    private static GameManager activeInstance;
 
     public static int dropInterval = 60;
+
+    public static List<Block> getStaticBlocks() {
+        return Collections.unmodifiableList(staticBlocks);
+    }
+
+    public static void addScore(int delta) {
+        if (activeInstance != null) {
+            activeInstance.score += delta;
+        }
+    }
 
     // Line clear effect - shorter duration for cleaner animation
     boolean effectCounterOn;
@@ -55,6 +74,7 @@ public class GameManager {
     private final ScoringStrategy scoringStrategy = new GuidelineScoring();
 
     public GameManager(){
+        activeInstance = this;
         dropInterval = 60;
         staticBlocks.clear();
         MinoFactory.resetBag(); // Reset piece randomizer on new game
@@ -73,15 +93,14 @@ public class GameManager {
         HOLDMINO_X = left_x - 210;
         HOLDMINO_Y = top_y + 100;
 
-        // Initialize preview queue - 3 pieces for display
         previewQueue.clear();
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < PREVIEW_COUNT; i++) {
             previewQueue.add(MinoFactory.getRandomType());
         }
-        
-        // Get current and next pieces
+
         currentMinoType = MinoFactory.getRandomType();
-        nextMinoType = MinoFactory.getRandomType();
+        nextMinoType = previewQueue.poll();
+        previewQueue.add(MinoFactory.getRandomType());
         
         currentMino = MinoFactory.createByType(currentMinoType);
         currentMino.setXY(MINO_START_X, MINO_START_Y);
@@ -106,14 +125,14 @@ public class GameManager {
         // Critical: Reset piece randomizer for new game
         MinoFactory.resetBag();
 
-        // Reinitialize preview queue - 3 pieces for display
         previewQueue.clear();
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < PREVIEW_COUNT; i++) {
             previewQueue.add(MinoFactory.getRandomType());
         }
 
         currentMinoType = MinoFactory.getRandomType();
-        nextMinoType = MinoFactory.getRandomType();
+        nextMinoType = previewQueue.poll();
+        previewQueue.add(MinoFactory.getRandomType());
         
         currentMino = MinoFactory.createByType(currentMinoType);
         currentMino.setXY(MINO_START_X, MINO_START_Y);
@@ -134,14 +153,12 @@ public class GameManager {
     }
 
     public void update (){
-        if (KeyHandler.holdPressed) {
+        if (KeyHandler.consumeHold()) {
             holdMino();
-            KeyHandler.holdPressed = false;
         }
 
-        if (KeyHandler.hardDropPressed) {
+        if (KeyHandler.consumeHardDrop()) {
             hardDropCurrentMino();
-            KeyHandler.hardDropPressed = false;
         }
 
         if (currentMino.activeMino == false){
@@ -200,7 +217,7 @@ public class GameManager {
             // Drop speed - by tetr.io
             // if the level increases, increase the drop speed speed
             if (lines % 5 == 0) {
-                dropInterval = (int)(dropInterval * 0.8);
+                dropInterval = Math.max(MIN_DROP_INTERVAL, (int) (dropInterval * 0.8));
             }
 
             // Drop blocks above down
@@ -231,7 +248,7 @@ public class GameManager {
         // Draw grid on playfield
         drawGrid(g2);
 
-        // Preview area (for next 5 pieces)
+        // Preview area (large NEXT + PREVIEW_COUNT stacked previews)
         int previewX = right_x + 80;
         int previewY = top_y + 60;
         g2.setColor(Color.white);
@@ -268,10 +285,10 @@ public class GameManager {
         // Draw next piece (larger preview)
         drawMiniMino(g2, nextMino, previewX, previewY, 60);
 
-        // Draw preview queue (next 3 pieces stacked)
+        // Draw preview queue (stacked mini previews)
         java.util.List<Integer> queueList = new java.util.ArrayList<>(previewQueue);
         int queueStartY = previewY + 110;
-        for (int i = 0; i < Math.min(3, queueList.size()); i++) {
+        for (int i = 0; i < Math.min(PREVIEW_COUNT, queueList.size()); i++) {
             Mino previewPiece = MinoFactory.createByType(queueList.get(i));
             drawMiniMino(g2, previewPiece, previewX, queueStartY + i * 85, 40);
         }
@@ -360,10 +377,21 @@ public class GameManager {
         }
     }
 
+    /**
+     * Game over only if the next piece cannot spawn — overlap between its spawn cells and the stack.
+     * (Any static block at y ≤ spawn row in another column is still legal.)
+     */
     private boolean isSpawnBlocked() {
-        for (int i = 0; i < staticBlocks.size(); i++) {
-            if (staticBlocks.get(i).y <= MINO_START_Y) {
-                return true;
+        Mino probe = MinoFactory.createByType(nextMinoType);
+        probe.setXY(MINO_START_X, MINO_START_Y);
+        for (int i = 0; i < probe.b.length; i++) {
+            int px = probe.b[i].x;
+            int py = probe.b[i].y;
+            for (int j = 0; j < staticBlocks.size(); j++) {
+                Block s = staticBlocks.get(j);
+                if (s.x == px && s.y == py) {
+                    return true;
+                }
             }
         }
         return false;
@@ -379,7 +407,7 @@ public class GameManager {
         currentMino.setXY(MINO_START_X, MINO_START_Y);
 
         nextMinoType = previewQueue.poll();
-        previewQueue.add(MinoFactory.getRandomType()); // Keep queue at 5
+        previewQueue.add(MinoFactory.getRandomType());
         
         nextMino = MinoFactory.createByType(nextMinoType);
         nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
@@ -415,6 +443,8 @@ public class GameManager {
         for (int i = 0; i < currentMino.b.length; i++) {
             currentMino.b[i].y += dropDistance * Block.SIZE;
         }
+
+        GameManager.addScore(2 * dropDistance); // Guideline: hard drop +2 per row
 
         currentMino.deactivating = false;
         currentMino.activeMino = false;
