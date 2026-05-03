@@ -2,11 +2,70 @@ package MainMethods;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Input uses AtomicBoolean + consume on the game thread to avoid lost updates
+ * between key events (EDT) and simulation reads.
+ */
 public class KeyHandler implements KeyListener {
-    public static volatile boolean leftPressed, rightPressed, downPressed;
-    public static volatile boolean rotateClockwisePressed, rotateCounterClockwisePressed, rotateHalfTurnPressed;
-    public static volatile boolean hardDropPressed, holdPressed, restartPressed;
+    private static final AtomicBoolean leftPressed = new AtomicBoolean(false);
+    private static final AtomicBoolean rightPressed = new AtomicBoolean(false);
+    private static final AtomicBoolean downPressed = new AtomicBoolean(false);
+    private static final AtomicBoolean rotateClockwisePressed = new AtomicBoolean(false);
+    private static final AtomicBoolean rotateCounterClockwisePressed = new AtomicBoolean(false);
+    private static final AtomicBoolean rotateHalfTurnPressed = new AtomicBoolean(false);
+    private static final AtomicBoolean hardDropPressed = new AtomicBoolean(false);
+    private static final AtomicBoolean holdPressed = new AtomicBoolean(false);
+    private static final AtomicBoolean restartPressed = new AtomicBoolean(false);
+
+    public static boolean consumeLeft() {
+        return leftPressed.getAndSet(false);
+    }
+
+    public static boolean consumeRight() {
+        return rightPressed.getAndSet(false);
+    }
+
+    public static boolean consumeDown() {
+        return downPressed.getAndSet(false);
+    }
+
+    public static boolean consumeRotateClockwise() {
+        return rotateClockwisePressed.getAndSet(false);
+    }
+
+    public static boolean consumeRotateCounterClockwise() {
+        return rotateCounterClockwisePressed.getAndSet(false);
+    }
+
+    public static boolean consumeRotateHalfTurn() {
+        return rotateHalfTurnPressed.getAndSet(false);
+    }
+
+    public static boolean consumeHardDrop() {
+        return hardDropPressed.getAndSet(false);
+    }
+
+    public static boolean consumeHold() {
+        return holdPressed.getAndSet(false);
+    }
+
+    public static boolean consumeRestart() {
+        return restartPressed.getAndSet(false);
+    }
+
+    /** Clears one-shot action flags (called after restart). */
+    public static void resetTransientInput() {
+        leftPressed.set(false);
+        rightPressed.set(false);
+        downPressed.set(false);
+        rotateClockwisePressed.set(false);
+        rotateCounterClockwisePressed.set(false);
+        rotateHalfTurnPressed.set(false);
+        hardDropPressed.set(false);
+        holdPressed.set(false);
+    }
 
     @Override
     public void keyTyped(KeyEvent e) {}
@@ -16,31 +75,31 @@ public class KeyHandler implements KeyListener {
         int code = e.getKeyCode();
 
         if (code == KeyEvent.VK_LEFT) {
-            leftPressed = true;
+            leftPressed.set(true);
         }
         if (code == KeyEvent.VK_RIGHT) {
-            rightPressed = true;
+            rightPressed.set(true);
         }
         if (code == KeyEvent.VK_DOWN) {
-            downPressed = true;
+            downPressed.set(true);
         }
         if (code == KeyEvent.VK_UP || code == KeyEvent.VK_X) {
-            rotateClockwisePressed = true;
+            rotateClockwisePressed.set(true);
         }
         if (code == KeyEvent.VK_Z) {
-            rotateCounterClockwisePressed = true;
+            rotateCounterClockwisePressed.set(true);
         }
         if (code == KeyEvent.VK_A) {
-            rotateHalfTurnPressed = true;
+            rotateHalfTurnPressed.set(true);
         }
         if (code == KeyEvent.VK_SPACE) {
-            hardDropPressed = true;
+            hardDropPressed.set(true);
         }
         if (code == KeyEvent.VK_C) {
-            holdPressed = true;
+            holdPressed.set(true);
         }
         if (code == KeyEvent.VK_R) {
-            restartPressed = true;
+            restartPressed.set(true);
         }
         if (code == KeyEvent.VK_P) {
             GamePanel.togglePause();
@@ -49,15 +108,4 @@ public class KeyHandler implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {}
-
-    public static void resetTransientInput() {
-        leftPressed = false;
-        rightPressed = false;
-        downPressed = false;
-        rotateClockwisePressed = false;
-        rotateCounterClockwisePressed = false;
-        rotateHalfTurnPressed = false;
-        hardDropPressed = false;
-        holdPressed = false;
-    }
 }
