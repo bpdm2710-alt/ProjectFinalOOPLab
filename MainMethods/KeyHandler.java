@@ -19,6 +19,23 @@ public class KeyHandler implements KeyListener {
     private static final AtomicBoolean holdPressed = new AtomicBoolean(false);
     private static final AtomicBoolean restartPressed = new AtomicBoolean(false);
     private static final AtomicBoolean pausePressed = new AtomicBoolean(false);
+    private static final AtomicBoolean escPressed = new AtomicBoolean(false);
+
+    public static boolean isLeftPressed() {
+        return leftPressed.get();
+    }
+
+    public static boolean isRightPressed() {
+        return rightPressed.get();
+    }
+
+    public static boolean isDownPressed() {
+        return downPressed.get();
+    }
+
+    public static boolean isEscPressed() {
+        return escPressed.get();
+    }
 
     public static boolean consumeLeft() {
         return leftPressed.getAndSet(false);
@@ -72,6 +89,7 @@ public class KeyHandler implements KeyListener {
         holdPressed.set(false);
         restartPressed.set(false);
         pausePressed.set(false);
+        escPressed.set(false);
     }
 
     @Override
@@ -111,8 +129,25 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_P) {
             pausePressed.set(true);
         }
+        if (code == KeyEvent.VK_ESCAPE) {
+            escPressed.set(true);
+        }
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {}
+    public void keyReleased(KeyEvent e) {
+        int code = e.getKeyCode();
+        if (code == KeyEvent.VK_LEFT) {
+            leftPressed.set(false);
+        }
+        if (code == KeyEvent.VK_RIGHT) {
+            rightPressed.set(false);
+        }
+        if (code == KeyEvent.VK_DOWN) {
+            downPressed.set(false);
+        }
+        if (code == KeyEvent.VK_ESCAPE) {
+            escPressed.set(false);
+        }
+    }
 }

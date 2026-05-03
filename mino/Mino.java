@@ -10,6 +10,15 @@ public class Mino {
     /** Lock delay at 60 FPS ≈ 0.75 s (Tetris Guideline-style). */
     public static final int LOCK_DELAY_FRAMES = 45;
 
+    public static int DAS_DELAY = 10;
+    public static int ARR_DELAY = 2;
+    public static int SDF_MULTIPLIER = 20;
+    public static final int MAX_LOCK_RESETS = 15;
+
+    protected int dasLeftCounter = 0;
+    protected int dasRightCounter = 0;
+    protected int lockResets = 0;
+
     protected GameManager gm;
 
     public Mino(GameManager gm) {
@@ -134,52 +143,96 @@ public class Mino {
         }
         checkMovementCollision();
 
-        if (KeyHandler.consumeLeft()) {
-            if (!leftCollision) {
-                b[0].x -= Block.SIZE;
-                b[1].x -= Block.SIZE;
-                b[2].x -= Block.SIZE;
-                b[3].x -= Block.SIZE;
+        boolean manipulated = false;
+
+        if (KeyHandler.isLeftPressed()) {
+            if (dasLeftCounter == 0 || (dasLeftCounter >= DAS_DELAY && (ARR_DELAY == 0 || (dasLeftCounter - DAS_DELAY) % ARR_DELAY == 0))) {
+                if (ARR_DELAY == 0 && dasLeftCounter >= DAS_DELAY) {
+                    while (!leftCollision) {
+                        b[0].x -= Block.SIZE; b[1].x -= Block.SIZE; b[2].x -= Block.SIZE; b[3].x -= Block.SIZE;
+                        checkMovementCollision();
+                        manipulated = true;
+                        autoDropCounter = 0;
+                    }
+                } else if (!leftCollision) {
+                    b[0].x -= Block.SIZE; b[1].x -= Block.SIZE; b[2].x -= Block.SIZE; b[3].x -= Block.SIZE;
+                    manipulated = true;
+                    autoDropCounter = 0;
+                }
+            }
+            dasLeftCounter++;
+        } else {
+            dasLeftCounter = 0;
+        }
+
+        checkMovementCollision();
+
+        if (KeyHandler.isRightPressed()) {
+            if (dasRightCounter == 0 || (dasRightCounter >= DAS_DELAY && (ARR_DELAY == 0 || (dasRightCounter - DAS_DELAY) % ARR_DELAY == 0))) {
+                if (ARR_DELAY == 0 && dasRightCounter >= DAS_DELAY) {
+                    while (!rightCollision) {
+                        b[0].x += Block.SIZE; b[1].x += Block.SIZE; b[2].x += Block.SIZE; b[3].x += Block.SIZE;
+                        checkMovementCollision();
+                        manipulated = true;
+                        autoDropCounter = 0;
+                    }
+                } else if (!rightCollision) {
+                    b[0].x += Block.SIZE; b[1].x += Block.SIZE; b[2].x += Block.SIZE; b[3].x += Block.SIZE;
+                    manipulated = true;
+                    autoDropCounter = 0;
+                }
+            }
+            dasRightCounter++;
+        } else {
+            dasRightCounter = 0;
+        }
+
+        checkMovementCollision();
+
+        if (KeyHandler.isDownPressed()) {
+            int dropDistance = 0;
+            while (!downCollision && dropDistance < SDF_MULTIPLIER) {
+                b[0].y += Block.SIZE; b[1].y += Block.SIZE; b[2].y += Block.SIZE; b[3].y += Block.SIZE;
+                dropDistance++;
+                checkMovementCollision();
+            }
+            if (dropDistance > 0) {
+                gm.addScore(dropDistance);
                 autoDropCounter = 0;
             }
+        } else {
+            // not holding down — nothing to reset; keyReleased already cleared the flag
         }
-        if (KeyHandler.consumeRight()) {
-            if (!rightCollision) {
-                b[0].x += Block.SIZE;
-                b[1].x += Block.SIZE;
-                b[2].x += Block.SIZE;
-                b[3].x += Block.SIZE;
-                autoDropCounter = 0;
-            }
-        }
-        if (KeyHandler.consumeDown()) {
-            if (!downCollision) {
-                b[0].y += Block.SIZE;
-                b[1].y += Block.SIZE;
-                b[2].y += Block.SIZE;
-                b[3].y += Block.SIZE;
-                autoDropCounter = 0;
-                gm.addScore(1);
-            }
-        }
+
+        checkMovementCollision();
         if (KeyHandler.consumeRotateClockwise()) {
             if (rotateClockwise()) {
                 GamePanel.effect.playEffect(3);
+                manipulated = true;
             }
         }
         if (KeyHandler.consumeRotateCounterClockwise()) {
             if (rotateCounterClockwise()) {
                 GamePanel.effect.playEffect(3);
+                manipulated = true;
             }
         }
         if (KeyHandler.consumeRotateHalfTurn()) {
             if (rotateHalfTurn()) {
                 GamePanel.effect.playEffect(3);
+                manipulated = true;
             }
         }
 
         // Re-check after movement so lock logic uses the current position.
         checkMovementCollision();
+
+        if (manipulated && downCollision) {
+            if (lockResets < MAX_LOCK_RESETS) {
+                deactivateCounter = 0;
+                lockResets++;
+            }
+        }
 
         if(downCollision){
             if (deactivating == false && !wasDownCollision){

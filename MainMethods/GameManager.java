@@ -60,6 +60,7 @@ public class GameManager {
     Mino holdMino;
     boolean holdUsedInTurn;
     GameState state = GameState.PLAYING;
+    public boolean practiceMode = false;
 
     private final ScoringStrategy scoringStrategy = new GuidelineScoring();
     private final GameRenderer gameRenderer = new GameRenderer();
@@ -218,10 +219,12 @@ public class GameManager {
 
         if (lineCount > 0) {
             lines += lineCount;
-            level = lines / 5 + 1;
-            
-            double secondsPerRow = Math.pow(Math.max(0.01, 0.8 - ((level - 1) * 0.007)), level - 1);
-            dropInterval = Math.max(1, (int)(secondsPerRow * 60));
+            if (!practiceMode) {
+                level = lines / 5 + 1;
+                
+                double secondsPerRow = Math.pow(Math.max(0.01, 0.8 - ((level - 1) * 0.007)), level - 1);
+                dropInterval = Math.max(1, (int)(secondsPerRow * 60));
+            }
 
             for (int i = 0; i < staticBlocks.size(); i++) {
                 int shift = 0;
