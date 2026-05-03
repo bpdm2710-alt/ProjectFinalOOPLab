@@ -25,7 +25,6 @@ public class Mino_I extends Mino {
         b[3].y = b[0].y;
     }
     public void getDirection1 () {
-        int oldDir = direction;
         // 
         // o o o o
         // 
@@ -38,10 +37,9 @@ public class Mino_I extends Mino {
         tempB[3].x = b[0].x + Block.SIZE * 2;
         tempB[3].y = b[0].y;
 
-        updateXY(1, oldDir);
+        updateXY(1);
     }
     public void getDirection2 () {
-        int oldDir = direction;
         // o
         // o
         // o
@@ -55,10 +53,9 @@ public class Mino_I extends Mino {
         tempB[3].x = b[0].x;
         tempB[3].y = b[0].y + Block.SIZE * 2;
         
-        updateXY(2, oldDir);
+        updateXY(2);
     }
     public void getDirection3() {
-        int oldDir = direction;
         // horizontal (same shape as state 1; direction index must be 3 for SRS)
         tempB[0].x = b[0].x;
         tempB[0].y = b[0].y;
@@ -68,10 +65,9 @@ public class Mino_I extends Mino {
         tempB[2].y = b[0].y;
         tempB[3].x = b[0].x + Block.SIZE * 2;
         tempB[3].y = b[0].y;
-        updateXY(3, oldDir);
+        updateXY(3);
     }
     public void getDirection4() {
-        int oldDir = direction;
         // vertical (same shape as state 2)
         tempB[0].x = b[0].x;
         tempB[0].y = b[0].y;
@@ -81,6 +77,6 @@ public class Mino_I extends Mino {
         tempB[2].y = b[0].y + Block.SIZE;
         tempB[3].x = b[0].x;
         tempB[3].y = b[0].y + Block.SIZE * 2;
-        updateXY(4, oldDir);
+        updateXY(4);
     }
 }

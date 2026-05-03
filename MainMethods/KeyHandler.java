@@ -5,21 +5,10 @@ import java.awt.event.KeyListener;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Input uses AtomicBoolean + consume on the game thread to avoid lost updates
- * between key events (EDT) and simulation reads.
+ * Input: EDT sets flags; game thread consumes with {@code getAndSet(false)}-style methods
+ * so key events are not lost between threads.
  */
 public class KeyHandler implements KeyListener {
-<<<<<<< HEAD
-    public static final AtomicBoolean leftPressed = new AtomicBoolean(false);
-    public static final AtomicBoolean rightPressed = new AtomicBoolean(false);
-    public static final AtomicBoolean downPressed = new AtomicBoolean(false);
-    public static final AtomicBoolean rotateClockwisePressed = new AtomicBoolean(false);
-    public static final AtomicBoolean rotateCounterClockwisePressed = new AtomicBoolean(false);
-    public static final AtomicBoolean rotateHalfTurnPressed = new AtomicBoolean(false);
-    public static final AtomicBoolean hardDropPressed = new AtomicBoolean(false);
-    public static final AtomicBoolean holdPressed = new AtomicBoolean(false);
-    public static final AtomicBoolean restartPressed = new AtomicBoolean(false);
-=======
     private static final AtomicBoolean leftPressed = new AtomicBoolean(false);
     private static final AtomicBoolean rightPressed = new AtomicBoolean(false);
     private static final AtomicBoolean downPressed = new AtomicBoolean(false);
@@ -66,7 +55,7 @@ public class KeyHandler implements KeyListener {
         return restartPressed.getAndSet(false);
     }
 
-    /** Clears one-shot action flags (called after restart). */
+    /** Clears one-shot action flags (e.g. after restart). */
     public static void resetTransientInput() {
         leftPressed.set(false);
         rightPressed.set(false);
@@ -76,8 +65,8 @@ public class KeyHandler implements KeyListener {
         rotateHalfTurnPressed.set(false);
         hardDropPressed.set(false);
         holdPressed.set(false);
+        restartPressed.set(false);
     }
->>>>>>> c0d029263a687911de201d4d08322d168074970c
 
     @Override
     public void keyTyped(KeyEvent e) {}
@@ -120,18 +109,4 @@ public class KeyHandler implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {}
-<<<<<<< HEAD
-
-    public static void resetTransientInput() {
-        leftPressed.set(false);
-        rightPressed.set(false);
-        downPressed.set(false);
-        rotateClockwisePressed.set(false);
-        rotateCounterClockwisePressed.set(false);
-        rotateHalfTurnPressed.set(false);
-        hardDropPressed.set(false);
-        holdPressed.set(false);
-    }
-=======
->>>>>>> c0d029263a687911de201d4d08322d168074970c
 }

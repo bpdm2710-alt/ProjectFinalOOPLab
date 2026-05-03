@@ -1,13 +1,9 @@
 package MainMethods;
 
+import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-<<<<<<< HEAD
-
-import java.awt.Graphics2D;
-=======
->>>>>>> c0d029263a687911de201d4d08322d168074970c
 
 import mino.*;
 
@@ -38,36 +34,13 @@ public class GameManager {
     final int HOLDMINO_X;
     final int HOLDMINO_Y;
 
-<<<<<<< HEAD
     java.util.Queue<Integer> previewQueue = new java.util.LinkedList<>();
 
     private final ArrayList<Block> staticBlocks = new ArrayList<>();
 
-=======
-    /** Visible “bag” of upcoming types below the large NEXT preview (must match queue fills). */
-    private static final int PREVIEW_COUNT = 3;
-    /** Speed curve floor so gravity stays playable at high level. */
-    private static final int MIN_DROP_INTERVAL = 1;
-
-    private java.util.Queue<Integer> previewQueue = new java.util.LinkedList<>();
-
-    private static final ArrayList<Block> staticBlocks = new ArrayList<>();
-
-    /** Last GameManager constructed — used for score from {@link mino.Mino}. */
->>>>>>> c0d029263a687911de201d4d08322d168074970c
     private static GameManager activeInstance;
 
     public static int dropInterval = 60;
-
-    public static List<Block> getStaticBlocks() {
-        return Collections.unmodifiableList(staticBlocks);
-    }
-
-    public static void addScore(int delta) {
-        if (activeInstance != null) {
-            activeInstance.score += delta;
-        }
-    }
 
     // Line clear effect - shorter duration for cleaner animation
     boolean effectCounterOn;
@@ -87,11 +60,7 @@ public class GameManager {
     private final ScoringStrategy scoringStrategy = new GuidelineScoring();
     private final GameRenderer gameRenderer = new GameRenderer();
 
-<<<<<<< HEAD
     public GameManager() {
-=======
-    public GameManager(){
->>>>>>> c0d029263a687911de201d4d08322d168074970c
         activeInstance = this;
         dropInterval = 60;
         staticBlocks.clear();
@@ -111,7 +80,6 @@ public class GameManager {
         HOLDMINO_Y = top_y + 100;
 
         previewQueue.clear();
-<<<<<<< HEAD
         for (int i = 0; i < PREVIEW_COUNT + 2; i++) {
             previewQueue.add(MinoFactory.getRandomType());
         }
@@ -119,16 +87,6 @@ public class GameManager {
         currentMinoType = previewQueue.poll();
         nextMinoType = previewQueue.poll();
 
-=======
-        for (int i = 0; i < PREVIEW_COUNT; i++) {
-            previewQueue.add(MinoFactory.getRandomType());
-        }
-
-        currentMinoType = MinoFactory.getRandomType();
-        nextMinoType = previewQueue.poll();
-        previewQueue.add(MinoFactory.getRandomType());
-        
->>>>>>> c0d029263a687911de201d4d08322d168074970c
         currentMino = MinoFactory.createByType(currentMinoType);
         currentMino.setXY(MINO_START_X, MINO_START_Y);
         nextMino = MinoFactory.createByType(nextMinoType);
@@ -166,7 +124,6 @@ public class GameManager {
         MinoFactory.resetBag();
 
         previewQueue.clear();
-<<<<<<< HEAD
         for (int i = 0; i < PREVIEW_COUNT + 2; i++) {
             previewQueue.add(MinoFactory.getRandomType());
         }
@@ -174,16 +131,6 @@ public class GameManager {
         currentMinoType = previewQueue.poll();
         nextMinoType = previewQueue.poll();
 
-=======
-        for (int i = 0; i < PREVIEW_COUNT; i++) {
-            previewQueue.add(MinoFactory.getRandomType());
-        }
-
-        currentMinoType = MinoFactory.getRandomType();
-        nextMinoType = previewQueue.poll();
-        previewQueue.add(MinoFactory.getRandomType());
-        
->>>>>>> c0d029263a687911de201d4d08322d168074970c
         currentMino = MinoFactory.createByType(currentMinoType);
         currentMino.setXY(MINO_START_X, MINO_START_Y);
         nextMino = MinoFactory.createByType(nextMinoType);
@@ -202,21 +149,12 @@ public class GameManager {
         }
     }
 
-<<<<<<< HEAD
     public void update() {
-        if (KeyHandler.holdPressed.getAndSet(false)) {
-            holdMino();
-        }
-
-        if (KeyHandler.hardDropPressed.getAndSet(false)) {
-=======
-    public void update (){
         if (KeyHandler.consumeHold()) {
             holdMino();
         }
 
         if (KeyHandler.consumeHardDrop()) {
->>>>>>> c0d029263a687911de201d4d08322d168074970c
             hardDropCurrentMino();
         }
 
@@ -251,39 +189,6 @@ public class GameManager {
         while (y < bottom_y) {
             int blockCount = 0;
 
-<<<<<<< HEAD
-=======
-        // Count all blocks in this row
-        for (int i = 0; i < staticBlocks.size(); i++) {
-            if (staticBlocks.get(i).y == y) {
-                blockCount++;
-            }
-        }
-        
-        // Check for full row (10 blocks in a 10-column board)
-        if (blockCount == 10) {
-
-            effectCounterOn = true;
-            effectY.add(y);
-
-            // Remove the full row
-            for (int i = staticBlocks.size() - 1; i > -1; i--) {
-                if (staticBlocks.get(i).y == y) {
-                    staticBlocks.remove(i);
-                }
-            }
-
-            lineCount++;
-            lines++;
-            level = lines / 5 + 1;
-            // Drop speed - by tetr.io
-            // if the level increases, increase the drop speed speed
-            if (lines % 5 == 0) {
-                dropInterval = Math.max(MIN_DROP_INTERVAL, (int) (dropInterval * 0.8));
-            }
-
-            // Drop blocks above down
->>>>>>> c0d029263a687911de201d4d08322d168074970c
             for (int i = 0; i < staticBlocks.size(); i++) {
                 if (staticBlocks.get(i).y == y) {
                     blockCount++;
@@ -301,7 +206,6 @@ public class GameManager {
                     }
                 }
 
-<<<<<<< HEAD
                 lineCount++;
                 lines++;
                 level = lines / 5 + 1;
@@ -316,82 +220,6 @@ public class GameManager {
                 }
             } else {
                 y += Block.SIZE;
-=======
-        // Preview area (large NEXT + PREVIEW_COUNT stacked previews)
-        int previewX = right_x + 80;
-        int previewY = top_y + 60;
-        g2.setColor(Color.white);
-        g2.setStroke(new BasicStroke(4f));
-        g2.drawRect(previewX, previewY, 180, 400);
-        g2.setFont(new Font("Arial", Font.BOLD, 18));
-        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        // Center "NEXT" text (box width 180, so center at +90)
-        g2.drawString("NEXT", previewX + 65, previewY + 28);
-
-        // Hold area
-        int holdX = left_x - 220;
-        int holdY = top_y + 60;
-        g2.setColor(Color.white);
-        g2.setStroke(new BasicStroke(4f));
-        g2.drawRect(holdX, holdY, 180, 180);
-        g2.setFont(new Font("Arial", Font.BOLD, 18));
-        // Center "HOLD" text (box width 180, so center at +90)
-        g2.drawString("HOLD", holdX + 60, holdY + 28);
-
-        // Draw Scores - better positioning
-        g2.setFont(new Font("Arial", Font.PLAIN, 16));
-        g2.setColor(Color.white);
-        g2.drawString("SCORE: " + score, previewX + 5, previewY + 425);
-        g2.drawString("LEVEL: " + level, holdX + 5, holdY + 210);
-        g2.drawString("LINES: " + lines, holdX + 5, holdY + 240);
-
-        // Draw current mino and ghost
-        if(currentMino != null){
-            drawGhostMino(g2);
-            currentMino.draw(g2);
-        }
-
-        // Draw next piece (larger preview)
-        drawMiniMino(g2, nextMino, previewX, previewY, 60);
-
-        // Draw preview queue (stacked mini previews)
-        java.util.List<Integer> queueList = new java.util.ArrayList<>(previewQueue);
-        int queueStartY = previewY + 110;
-        for (int i = 0; i < Math.min(PREVIEW_COUNT, queueList.size()); i++) {
-            Mino previewPiece = MinoFactory.createByType(queueList.get(i));
-            drawMiniMino(g2, previewPiece, previewX, queueStartY + i * 85, 40);
-        }
-
-        // Draw hold mino
-        if (holdMino != null) {
-            drawMiniMino(g2, holdMino, holdX, holdY, 50);
-        }
-
-        // Draw static blocks
-        for(int i = 0; i < staticBlocks.size(); i++){
-            staticBlocks.get(i).draw(g2);
-        }
-        
-        // Draw line clear effect (cleaner - shorter duration and fade)
-        if (effectCounterOn) {
-            effectCounter++;
-            
-            // Fade effect: alpha decreases from 255 to 0
-            int maxDuration = 15; // Shorter duration for cleaner effect
-            float alpha = 1.0f - (float)effectCounter / maxDuration;
-            
-            // Draw semi-transparent yellow flash over cleared lines
-            for (int i = 0; i < effectY.size(); i++) {
-                int yEffect = effectY.get(i);
-                g2.setColor(new Color(1.0f, 1.0f, 0.0f, Math.max(0, alpha)));
-                g2.fillRect(left_x, yEffect, WIDTH, Block.SIZE);
-            }
-            
-            if (effectCounter >= maxDuration) {
-                effectCounter = 0;
-                effectCounterOn = false;
-                effectY.clear();
->>>>>>> c0d029263a687911de201d4d08322d168074970c
             }
         }
 
@@ -401,7 +229,6 @@ public class GameManager {
         }
     }
 
-<<<<<<< HEAD
     public void draw(Graphics2D g2) {
         gameRenderer.draw(this, g2);
     }
@@ -415,21 +242,6 @@ public class GameManager {
         for (int i = 0; i < test.b.length; i++) {
             for (int j = 0; j < staticBlocks.size(); j++) {
                 if (test.b[i].x == staticBlocks.get(j).x && test.b[i].y == staticBlocks.get(j).y) {
-=======
-    /**
-     * Game over only if the next piece cannot spawn — overlap between its spawn cells and the stack.
-     * (Any static block at y ≤ spawn row in another column is still legal.)
-     */
-    private boolean isSpawnBlocked() {
-        Mino probe = MinoFactory.createByType(nextMinoType);
-        probe.setXY(MINO_START_X, MINO_START_Y);
-        for (int i = 0; i < probe.b.length; i++) {
-            int px = probe.b[i].x;
-            int py = probe.b[i].y;
-            for (int j = 0; j < staticBlocks.size(); j++) {
-                Block s = staticBlocks.get(j);
-                if (s.x == px && s.y == py) {
->>>>>>> c0d029263a687911de201d4d08322d168074970c
                     return true;
                 }
             }
@@ -448,11 +260,7 @@ public class GameManager {
 
         nextMinoType = previewQueue.poll();
         previewQueue.add(MinoFactory.getRandomType());
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> c0d029263a687911de201d4d08322d168074970c
         nextMino = MinoFactory.createByType(nextMinoType);
         nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
     }
@@ -488,11 +296,7 @@ public class GameManager {
             currentMino.b[i].y += dropDistance * Block.SIZE;
         }
 
-<<<<<<< HEAD
-        addScore(2 * dropDistance);
-=======
-        GameManager.addScore(2 * dropDistance); // Guideline: hard drop +2 per row
->>>>>>> c0d029263a687911de201d4d08322d168074970c
+        GameManager.addScore(2 * dropDistance);
 
         currentMino.deactivating = false;
         currentMino.activeMino = false;
