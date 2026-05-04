@@ -11,16 +11,16 @@ public class GameManager {
     /**
      * Pieces in {@link #previewQueue} drawn after the immediate next (UI shows next + this count = 5, tetr.io-style).
      */
-    static final int PREVIEW_COUNT = 4;
+    public static final int PREVIEW_COUNT = 4;
 
     /** Minimum gravity interval (frames); avoids division issues and stuck loop at high level. */
     private static final int MIN_DROP_INTERVAL_FRAMES = 1;
 
     // Tetris Guideline: 10 columns × 20 visible rows + 20 buffer rows = 40 total
-    final int WIDTH = 300;      // 10 columns × 30px
-    final int HEIGHT = 600;     // 20 visible rows × 30px
-    final int BUFFER_ROWS = 20; // Hidden rows above for spawn zone
-    final int TOTAL_ROWS = 40;  // Total internal rows
+    public final int WIDTH = 300;      // 10 columns × 30px
+    public final int HEIGHT = 600;     // 20 visible rows × 30px
+    public final int BUFFER_ROWS = 20; // Hidden rows above for spawn zone
+    public final int TOTAL_ROWS = 40;  // Total internal rows
 
     public int left_x;
     public int right_x;
@@ -28,13 +28,13 @@ public class GameManager {
     public int bottom_y;
 
     Mino currentMino;
-    final int MINO_START_X;
-    final int MINO_START_Y;
+    private final int MINO_START_X;
+    private final int MINO_START_Y;
     Mino nextMino;
-    final int NEXTMINO_X;
-    final int NEXTMINO_Y;
-    final int HOLDMINO_X;
-    final int HOLDMINO_Y;
+    private final int NEXTMINO_X;
+    private final int NEXTMINO_Y;
+    private final int HOLDMINO_X;
+    private final int HOLDMINO_Y;
 
     java.util.Queue<Integer> previewQueue = new java.util.LinkedList<>();
 
