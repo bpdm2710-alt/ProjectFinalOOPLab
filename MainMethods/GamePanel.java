@@ -10,7 +10,7 @@ import java.awt.CardLayout;
 public class GamePanel extends JPanel implements Runnable{
     public static final int WIDTH = 1280;
     public static final int HEIGHT = 720;
-    final int FPS = 60;
+    public final int FPS = 60;
     Thread gameThread;
     GameManager gameManager;
     public static Sound music = new Sound();
