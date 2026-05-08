@@ -16,6 +16,7 @@ public class Mino_I extends Mino {
         return 1;
     }
 
+    @Override
     public void setXY(int x, int y){
         b[0].x = x;
         b[0].y = y;
@@ -26,6 +27,7 @@ public class Mino_I extends Mino {
         b[3].x = b[0].x + Block.SIZE * 2;
         b[3].y = b[0].y;
     }
+    @Override
     public void getDirection1 () {
         // 
         // o o o o
@@ -41,6 +43,7 @@ public class Mino_I extends Mino {
 
         updateXY(1);
     }
+    @Override
     public void getDirection2 () {
         // o
         // o
@@ -57,6 +60,7 @@ public class Mino_I extends Mino {
         
         updateXY(2);
     }
+    @Override
     public void getDirection3() {
         // horizontal (same shape as state 1; direction index must be 3 for SRS)
         tempB[0].x = b[0].x;
@@ -69,6 +73,7 @@ public class Mino_I extends Mino {
         tempB[3].y = b[0].y;
         updateXY(3);
     }
+    @Override
     public void getDirection4() {
         // vertical (same shape as state 2)
         tempB[0].x = b[0].x;

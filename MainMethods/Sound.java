@@ -63,9 +63,8 @@ public class Sound {
                 musicClip = clip; // Save music clip for pause/resume
             }
             
-            try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(soundFile)) {
-                clip.open(audioInputStream);
-            }
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(soundFile);
+            clip.open(audioInputStream);
 
             if (loop) {
                 clip.loop(Clip.LOOP_CONTINUOUSLY);

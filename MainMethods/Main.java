@@ -6,23 +6,25 @@ import java.awt.CardLayout;
 
 public class Main {
     public static void main(String[] args) {
-        JFrame window = new JFrame("Tetris");
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setResizable(false);
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            JFrame window = new JFrame("Tetris");
+            window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            window.setResizable(false);
 
-        JPanel mainContainer = new JPanel(new CardLayout());
-        GamePanel gamePanel = new GamePanel();
-        CardLayout cl = (CardLayout) mainContainer.getLayout();
-        gamePanel.setNavigation(cl, mainContainer);
-        MenuPanel menuPanel = new MenuPanel(cl, mainContainer, gamePanel);
+            JPanel mainContainer = new JPanel(new CardLayout());
+            GamePanel gamePanel = new GamePanel();
+            CardLayout cl = (CardLayout) mainContainer.getLayout();
+            gamePanel.setNavigation(cl, mainContainer);
+            MenuPanel menuPanel = new MenuPanel(cl, mainContainer, gamePanel);
 
-        mainContainer.add(menuPanel, "MENU");
-        mainContainer.add(gamePanel, "GAME");
+            mainContainer.add(menuPanel, "MENU");
+            mainContainer.add(gamePanel, "GAME");
 
-        window.add(mainContainer);
-        window.pack();
+            window.add(mainContainer);
+            window.pack();
 
-        window.setLocationRelativeTo(null);
-        window.setVisible(true);
+            window.setLocationRelativeTo(null);
+            window.setVisible(true);
+        });
     }
 }

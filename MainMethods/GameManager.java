@@ -9,58 +9,56 @@ import mino.*;
 
 public class GameManager {
     /**
-     * Pieces in {@link #previewQueue} drawn after the immediate next (UI shows next + this count = 5, tetr.io-style).
+     * Pieces in {@link #previewQueue} drawn after the immediate next (UI shows next
+     * + this count = 5, tetr.io-style).
      */
     public static final int PREVIEW_COUNT = 4;
 
-    /** Minimum gravity interval (frames); avoids division issues and stuck loop at high level. */
-    private static final int MIN_DROP_INTERVAL_FRAMES = 1;
+    /** Duration of line clear flash effect in frames (at 60 FPS). */
+    private static final int EFFECT_DURATION_FRAMES = 15;
 
     // Tetris Guideline: 10 columns × 20 visible rows + 20 buffer rows = 40 total
-    public final int WIDTH = 300;      // 10 columns × 30px
-    public final int HEIGHT = 600;     // 20 visible rows × 30px
+    public final int WIDTH = 300; // 10 columns × 30px
+    public final int HEIGHT = 600; // 20 visible rows × 30px
     public final int BUFFER_ROWS = 20; // Hidden rows above for spawn zone
-    public final int TOTAL_ROWS = 40;  // Total internal rows
+    public final int TOTAL_ROWS = 40; // Total internal rows
 
-    public int left_x;
-    public int right_x;
-    public int top_y;
-    public int bottom_y;
+    private final int left_x;
+    private final int right_x;
+    private final int top_y;
+    private final int bottom_y;
 
-    Mino currentMino;
+    private Mino currentMino;
     private final int MINO_START_X;
     private final int MINO_START_Y;
-    Mino nextMino;
-    private final int NEXTMINO_X;
-    private final int NEXTMINO_Y;
-    private final int HOLDMINO_X;
-    private final int HOLDMINO_Y;
 
-    java.util.Queue<Integer> previewQueue = new java.util.LinkedList<>();
+
+
+    private final java.util.Queue<Integer> previewQueue = new java.util.LinkedList<>();
 
     private final ArrayList<Block> staticBlocks = new ArrayList<>();
 
     /**
-     * The project assumes one live session: a single {@link GameManager} owned by {@link GamePanel}.
+     * The project assumes one live session: a single {@link GameManager} owned by
+     * {@link GamePanel}.
      */
 
-    public int dropInterval = 60;
+    private int dropInterval = 60;
 
-    // Line clear effect - shorter duration for cleaner animation
-    boolean effectCounterOn;
-    int effectCounter;
-    java.util.concurrent.CopyOnWriteArrayList<Integer> effectY = new java.util.concurrent.CopyOnWriteArrayList<>();
+    // Line clear effect
+    private boolean effectCounterOn;
+    private int effectCounter;
+    private final java.util.concurrent.CopyOnWriteArrayList<Integer> effectY = new java.util.concurrent.CopyOnWriteArrayList<>();
 
-    int level = 1;
-    int lines = 0;
-    int score = 0;
-    int currentMinoType;
-    int nextMinoType;
-    int holdMinoType = -1;
-    Mino holdMino;
-    boolean holdUsedInTurn;
-    GameState state = GameState.PLAYING;
-    public boolean practiceMode = false;
+    private int level = 1;
+    private int lines = 0;
+    private int score = 0;
+    private int currentMinoType;
+    private int nextMinoType;
+    private int holdMinoType = -1;
+    private boolean holdUsedInTurn;
+    private GameState state = GameState.PLAYING;
+    private boolean practiceMode = false;
 
     private final ScoringStrategy scoringStrategy = new GuidelineScoring();
     private final GameRenderer gameRenderer = new GameRenderer();
@@ -78,11 +76,6 @@ public class GameManager {
         MINO_START_X = left_x + WIDTH / 2 - Block.SIZE;
         MINO_START_Y = top_y + Block.SIZE;
 
-        NEXTMINO_X = right_x + 140;
-        NEXTMINO_Y = top_y + 100;
-        HOLDMINO_X = left_x - 210;
-        HOLDMINO_Y = top_y + 100;
-
         previewQueue.clear();
         // Initialize queue with enough pieces for current, next, and previews
         int initialSpawns = PREVIEW_COUNT + 2;
@@ -95,15 +88,169 @@ public class GameManager {
 
         currentMino = MinoFactory.createByType(this, currentMinoType);
         currentMino.setXY(MINO_START_X, MINO_START_Y);
-        nextMino = MinoFactory.createByType(this, nextMinoType);
-        nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
+    }
+
+    /**
+     * Get current Mino piece.
+     * 
+     * @return the currently active tetromino, or null if none
+     */
+    public Mino getCurrentMino() {
+        return currentMino;
+    }
+
+    /**
+     * Get preview queue of upcoming pieces.
+     * 
+     * @return unmodifiable list of queue contents
+     */
+    public java.util.List<Integer> getPreviewQueue() {
+        return Collections.unmodifiableList(new ArrayList<>(previewQueue));
+    }
+
+    /**
+     * Get next Mino type code.
+     * 
+     * @return piece type (0-6)
+     */
+    public int getNextMinoType() {
+        return nextMinoType;
+    }
+
+    /**
+     * Get held Mino type code, or -1 if none.
+     * 
+     * @return piece type (0-6) or -1 if no hold
+     */
+    public int getHoldMinoType() {
+        return holdMinoType;
+    }
+
+    /**
+     * Get play field bounds.
+     * 
+     * @return left boundary x coordinate
+     */
+    public int getLeftX() {
+        return left_x;
+    }
+
+    /**
+     * Get play field bounds.
+     * 
+     * @return right boundary x coordinate
+     */
+    public int getRightX() {
+        return right_x;
+    }
+
+    /**
+     * Get play field bounds.
+     * 
+     * @return top boundary y coordinate
+     */
+    public int getTopY() {
+        return top_y;
+    }
+
+    /**
+     * Get play field bounds.
+     * 
+     * @return bottom boundary y coordinate
+     */
+    public int getBottomY() {
+        return bottom_y;
+    }
+
+    /**
+     * Get current gravity drop interval in frames.
+     * 
+     * @return drop interval at 60 FPS
+     */
+    public int getDropInterval() {
+        return dropInterval;
+    }
+
+    /**
+     * Get line clear animation state.
+     * 
+     * @return true if animation is playing
+     */
+    public boolean isEffectCounterOn() {
+        return effectCounterOn;
+    }
+
+    /**
+     * Get line clear animation progress counter.
+     * 
+     * @return animation frame counter
+     */
+    public int getEffectCounter() {
+        return effectCounter;
+    }
+
+    /**
+     * Get y-coordinates of rows being cleared.
+     * 
+     * @return thread-safe list of y positions
+     */
+    public java.util.concurrent.CopyOnWriteArrayList<Integer> getEffectY() {
+        return effectY;
+    }
+
+    /**
+     * Get current level.
+     * 
+     * @return level (1-based)
+     */
+    public int getLevel() {
+        return level;
+    }
+
+    /**
+     * Get total lines cleared.
+     * 
+     * @return line count
+     */
+    public int getLines() {
+        return lines;
+    }
+
+    /**
+     * Get current score.
+     * 
+     * @return score points
+     */
+    public int getScore() {
+        return score;
+    }
+
+    /**
+     * Check if practice mode is enabled.
+     * 
+     * @return true if gravity is locked at level 1
+     */
+    public boolean isPracticeMode() {
+        return practiceMode;
+    }
+
+    /**
+     * Set practice mode flag.
+     * 
+     * @param practiceMode true to lock gravity at starting speed
+     */
+    public void setPracticeMode(boolean practiceMode) {
+        this.practiceMode = practiceMode;
     }
 
     public List<Block> getStaticBlocks() {
         return Collections.unmodifiableList(staticBlocks);
     }
 
-    /** Guideline-style soft/hard drop bonus (lines still use {@link GuidelineScoring}). */
+    /**
+     * Guideline-style soft/hard drop bonus (lines still use
+     * {@link GuidelineScoring}).
+     */
     public void addScore(int points) {
         if (state == GameState.PLAYING && points != 0) {
             score += points;
@@ -120,7 +267,6 @@ public class GameManager {
         lines = 0;
         level = 1;
         holdMinoType = -1;
-        holdMino = null;
         holdUsedInTurn = false;
         state = GameState.PLAYING;
 
@@ -137,8 +283,6 @@ public class GameManager {
 
         currentMino = MinoFactory.createByType(this, currentMinoType);
         currentMino.setXY(MINO_START_X, MINO_START_Y);
-        nextMino = MinoFactory.createByType(this, nextMinoType);
-        nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
     }
 
     public GameState getState() {
@@ -154,10 +298,11 @@ public class GameManager {
     }
 
     public void update() {
-        // Update line clear animation (kept out of renderer to avoid state mutation in paint)
+        // Update line clear animation (kept out of renderer to avoid state mutation in
+        // paint)
         if (effectCounterOn) {
             effectCounter++;
-            if (effectCounter >= 15) {
+            if (effectCounter >= EFFECT_DURATION_FRAMES) {
                 effectCounter = 0;
                 effectCounterOn = false;
                 effectY.clear();
@@ -231,9 +376,9 @@ public class GameManager {
             lines += lineCount;
             if (!practiceMode) {
                 level = lines / 5 + 1;
-                
+
                 double secondsPerRow = Math.pow(Math.max(0.01, 0.8 - ((level - 1) * 0.007)), level - 1);
-                dropInterval = Math.max(1, (int)(secondsPerRow * 60));
+                dropInterval = Math.max(1, (int) (secondsPerRow * GamePanel.FPS));
             }
 
             for (int i = 0; i < staticBlocks.size(); i++) {
@@ -256,35 +401,11 @@ public class GameManager {
     }
 
     private boolean isSpawnBlocked() {
-        int x = MINO_START_X;
-        int y = MINO_START_Y;
-        int s = Block.SIZE;
-        
-        int[] tx = new int[4];
-        int[] ty = new int[4];
-        
-        switch(nextMinoType) {
-            case 0: // L
-                tx[0]=x; ty[0]=y; tx[1]=x-s; ty[1]=y; tx[2]=x+s; ty[2]=y; tx[3]=x+s; ty[3]=y-s; break;
-            case 1: // J
-                tx[0]=x; ty[0]=y; tx[1]=x+s; ty[1]=y; tx[2]=x-s; ty[2]=y; tx[3]=x-s; ty[3]=y-s; break;
-            case 2: // I
-                tx[0]=x; ty[0]=y; tx[1]=x-s; ty[1]=y; tx[2]=x+s; ty[2]=y; tx[3]=x+s*2; ty[3]=y; break;
-            case 3: // O
-                tx[0]=x; ty[0]=y; tx[1]=x; ty[1]=y+s; tx[2]=x+s; ty[2]=y; tx[3]=x+s; ty[3]=y+s; break;
-            case 4: // Z
-                tx[0]=x; ty[0]=y; tx[1]=x+s; ty[1]=y; tx[2]=x; ty[2]=y-s; tx[3]=x-s; ty[3]=y-s; break;
-            case 5: // T
-                tx[0]=x; ty[0]=y; tx[1]=x; ty[1]=y-s; tx[2]=x-s; ty[2]=y; tx[3]=x+s; ty[3]=y; break;
-            case 6: // S
-                tx[0]=x; ty[0]=y; tx[1]=x+s; ty[1]=y; tx[2]=x-s; ty[2]=y+s; tx[3]=x; ty[3]=y+s; break;
-            default:
-                tx[0]=x; ty[0]=y; tx[1]=x; ty[1]=y+s; tx[2]=x+s; ty[2]=y; tx[3]=x+s; ty[3]=y+s; break;
-        }
-        
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < staticBlocks.size(); j++) {
-                if (tx[i] == staticBlocks.get(j).x && ty[i] == staticBlocks.get(j).y) {
+        Mino test = MinoFactory.createByType(this, nextMinoType);
+        test.setXY(MINO_START_X, MINO_START_Y);
+        for (Block block : test.b) {
+            for (Block sb : staticBlocks) {
+                if (block.x == sb.x && block.y == sb.y) {
                     return true;
                 }
             }
@@ -303,9 +424,6 @@ public class GameManager {
 
         nextMinoType = previewQueue.poll();
         previewQueue.add(MinoFactory.getRandomType());
-
-        nextMino = MinoFactory.createByType(this, nextMinoType);
-        nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
     }
 
     private void holdMino() {
@@ -324,8 +442,6 @@ public class GameManager {
             currentMino.setXY(MINO_START_X, MINO_START_Y);
         }
 
-        holdMino = MinoFactory.createByType(this, holdMinoType);
-        holdMino.setXY(HOLDMINO_X, HOLDMINO_Y);
         holdUsedInTurn = true;
     }
 

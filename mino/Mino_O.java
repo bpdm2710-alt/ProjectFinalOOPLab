@@ -15,6 +15,7 @@ public class Mino_O extends Mino {
         return 0;
     }
 
+    @Override
     public void setXY(int x, int y){
         b[0].x = x;
         b[0].y = y;
@@ -25,8 +26,12 @@ public class Mino_O extends Mino {
         b[3].x = b[0].x + Block.SIZE;
         b[3].y = b[0].y + Block.SIZE;
     }
+    @Override
     public void getDirection1 () {}
+    @Override
     public void getDirection2 () {}
+    @Override
     public void getDirection3 () {}
+    @Override
     public void getDirection4 () {}
 }

@@ -18,10 +18,10 @@ public class MenuPanel extends JPanel {
 
     private static final String[] BTN_LABELS = { "MARATHON", "PRACTICE", "CONFIG", "QUIT" };
     private static final Color[] BTN_COLORS = {
-        new Color(200, 50, 130),  // Magenta-pink
-        new Color(40, 180, 90),   // Green
-        new Color(60, 110, 220),  // Blue
-        new Color(70, 70, 70),    // Grey
+            new Color(200, 50, 130), // Magenta-pink
+            new Color(40, 180, 90), // Green
+            new Color(60, 110, 220), // Blue
+            new Color(70, 70, 70), // Grey
     };
 
     public MenuPanel(CardLayout cardLayout, JPanel mainContainer, GamePanel gamePanel) {
@@ -43,7 +43,8 @@ public class MenuPanel extends JPanel {
                         break;
                     }
                 }
-                if (hoveredBtn != prev) repaint();
+                if (hoveredBtn != prev)
+                    repaint();
             }
         });
 
@@ -53,6 +54,7 @@ public class MenuPanel extends JPanel {
                 hoveredBtn = -1;
                 repaint();
             }
+
             @Override
             public void mouseClicked(MouseEvent e) {
                 for (int i = 0; i < btnRects.length; i++) {
@@ -85,12 +87,14 @@ public class MenuPanel extends JPanel {
         // ── Subtle grid lines ──
         g2.setColor(new Color(255, 255, 255, 8));
         g2.setStroke(new BasicStroke(1f));
-        for (int x = 0; x < w; x += 40) g2.drawLine(x, 0, x, h);
-        for (int y = 0; y < h; y += 40) g2.drawLine(0, y, w, y);
+        for (int x = 0; x < w; x += 40)
+            g2.drawLine(x, 0, x, h);
+        for (int y = 0; y < h; y += 40)
+            g2.drawLine(0, y, w, y);
 
         // ── Accent horizontal bar ──
-        float[] fractions = {0f, 0.5f, 1f};
-        Color[] accentColors = {new Color(200, 50, 130, 0), new Color(200, 50, 130, 60), new Color(200, 50, 130, 0)};
+        float[] fractions = { 0f, 0.5f, 1f };
+        Color[] accentColors = { new Color(200, 50, 130, 0), new Color(200, 50, 130, 60), new Color(200, 50, 130, 0) };
         g2.setPaint(new java.awt.LinearGradientPaint(0, 0, w, 0, fractions, accentColors));
         g2.fillRect(0, h / 2 - 1, w, 2);
 
@@ -100,7 +104,7 @@ public class MenuPanel extends JPanel {
         // ── Buttons ──
         int btnW = 380;
         int btnH = 62;
-        int gap  = 18;
+        int gap = 18;
         int startX = (w - btnW) / 2;
         int startY = h / 2 - 10;
 
@@ -129,7 +133,7 @@ public class MenuPanel extends JPanel {
 
         for (int radius = 24; radius >= 4; radius -= 4) {
             float alpha = 0.04f + (24 - radius) * 0.003f;
-            g2.setColor(new Color(200f/255, 50f/255, 130f/255, alpha));
+            g2.setColor(new Color(200f / 255, 50f / 255, 130f / 255, alpha));
             g2.drawString(title, tx, ty + radius / 3);
         }
 
@@ -177,19 +181,19 @@ public class MenuPanel extends JPanel {
 
     private void handleButtonClick(int index) {
         switch (index) {
-            case 0 -> startGame(false);  // MARATHON
-            case 1 -> startGame(true);   // PRACTICE
-            case 2 -> openConfig();      // CONFIG
-            case 3 -> System.exit(0);    // QUIT
+            case 0 -> startGame(false); // MARATHON
+            case 1 -> startGame(true); // PRACTICE
+            case 2 -> openConfig(); // CONFIG
+            case 3 -> System.exit(0); // QUIT
         }
     }
 
     private void startGame(boolean isPractice) {
-        gamePanel.gameManager.practiceMode = isPractice;
+        gamePanel.gameManager.setPracticeMode(isPractice);
         cardLayout.show(mainContainer, "GAME");
         gamePanel.requestFocusInWindow();
 
-        if (gamePanel.gameThread == null) {
+        if (gamePanel.gameThread == null || !gamePanel.gameThread.isAlive()) {
             gamePanel.launchGame();
         } else {
             gamePanel.gameManager.restartGame();
@@ -198,38 +202,110 @@ public class MenuPanel extends JPanel {
     }
 
     private void openConfig() {
+        final double MS_PER_FRAME = 1000.0 / 60.0; // ~16.667ms at 60 FPS
+
         // Style the config panel to match the dark theme
-        UIManager.put("OptionPane.background",        new Color(18, 18, 40));
-        UIManager.put("Panel.background",             new Color(18, 18, 40));
+        UIManager.put("OptionPane.background", new Color(18, 18, 40));
+        UIManager.put("Panel.background", new Color(18, 18, 40));
         UIManager.put("OptionPane.messageForeground", Color.WHITE);
-        UIManager.put("Label.foreground",             Color.WHITE);
+        UIManager.put("Label.foreground", Color.WHITE);
 
-        JPanel configPanel = new JPanel(new GridLayout(3, 2, 8, 8));
+        JPanel configPanel = new JPanel(new GridBagLayout());
         configPanel.setBackground(new Color(18, 18, 40));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        configPanel.add(styledLabel("DAS (Delay Auto Shift) ms:"));
-        JTextField dasInput = styledField(String.valueOf(Mino.DAS_DELAY * 16));
-        configPanel.add(dasInput);
+        // Advanced Mode toggle
+        JCheckBox advancedToggle = new JCheckBox("Advanced Mode (raw frames)");
+        advancedToggle.setBackground(new Color(18, 18, 40));
+        advancedToggle.setForeground(new Color(180, 180, 220));
+        advancedToggle.setFont(new Font("Arial", Font.PLAIN, 13));
+        advancedToggle.setFocusPainted(false);
 
-        configPanel.add(styledLabel("ARR (Auto Repeat Rate) ms:"));
-        JTextField arrInput = styledField(String.valueOf(Mino.ARR_DELAY * 16));
-        configPanel.add(arrInput);
+        // Labels
+        JLabel dasLabel = styledLabel("DAS (Delayed Auto Shift) ms:");
+        JLabel arrLabel = styledLabel("ARR (Auto Repeat Rate) ms:");
+        JLabel sdfLabel = styledLabel("SDF (Soft Drop Factor) ×:");
 
-        configPanel.add(styledLabel("SDF (Soft Drop Factor) x:"));
+        // Default values in ms
+        JTextField dasInput = styledField(String.valueOf(Math.round(Mino.DAS_DELAY * MS_PER_FRAME)));
+        JTextField arrInput = styledField(String.valueOf(Math.round(Mino.ARR_DELAY * MS_PER_FRAME)));
         JTextField sdfInput = styledField(String.valueOf(Mino.SDF_MULTIPLIER));
-        configPanel.add(sdfInput);
+
+        // Toggle listener: switch between ms and frame display
+        advancedToggle.addActionListener(e -> {
+            if (advancedToggle.isSelected()) {
+                dasLabel.setText("DAS (frames):");
+                arrLabel.setText("ARR (frames):");
+                sdfLabel.setText("SDF (cells/frame):");
+                // Convert current ms values back to frames
+                try {
+                    int dasMs = Integer.parseInt(dasInput.getText().trim());
+                    int arrMs = Integer.parseInt(arrInput.getText().trim());
+                    dasInput.setText(String.valueOf((int) Math.round(dasMs / MS_PER_FRAME)));
+                    arrInput.setText(String.valueOf((int) Math.round(arrMs / MS_PER_FRAME)));
+                } catch (NumberFormatException ex) {
+                    // Leave as-is if invalid
+                }
+            } else {
+                dasLabel.setText("DAS (Delayed Auto Shift) ms:");
+                arrLabel.setText("ARR (Auto Repeat Rate) ms:");
+                sdfLabel.setText("SDF (Soft Drop Factor) ×:");
+                // Convert current frame values to ms
+                try {
+                    int dasF = Integer.parseInt(dasInput.getText().trim());
+                    int arrF = Integer.parseInt(arrInput.getText().trim());
+                    dasInput.setText(String.valueOf(Math.round(dasF * MS_PER_FRAME)));
+                    arrInput.setText(String.valueOf(Math.round(arrF * MS_PER_FRAME)));
+                } catch (NumberFormatException ex) {
+                    // Leave as-is if invalid
+                }
+            }
+        });
+
+        // Layout: row 0 = advanced toggle (span 2 cols)
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        configPanel.add(advancedToggle, gbc);
+
+        gbc.gridwidth = 1;
+
+        // Row 1: DAS
+        gbc.gridx = 0; gbc.gridy = 1;
+        configPanel.add(dasLabel, gbc);
+        gbc.gridx = 1;
+        configPanel.add(dasInput, gbc);
+
+        // Row 2: ARR
+        gbc.gridx = 0; gbc.gridy = 2;
+        configPanel.add(arrLabel, gbc);
+        gbc.gridx = 1;
+        configPanel.add(arrInput, gbc);
+
+        // Row 3: SDF
+        gbc.gridx = 0; gbc.gridy = 3;
+        configPanel.add(sdfLabel, gbc);
+        gbc.gridx = 1;
+        configPanel.add(sdfInput, gbc);
 
         int result = JOptionPane.showConfirmDialog(this, configPanel,
                 "Handling Config", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
             try {
-                int dasMs = Integer.parseInt(dasInput.getText().trim());
-                int arrMs = Integer.parseInt(arrInput.getText().trim());
-                int sdf   = Integer.parseInt(sdfInput.getText().trim());
+                int dasVal = Integer.parseInt(dasInput.getText().trim());
+                int arrVal = Integer.parseInt(arrInput.getText().trim());
+                int sdf = Integer.parseInt(sdfInput.getText().trim());
 
-                Mino.DAS_DELAY    = Math.max(0, dasMs / 16);
-                Mino.ARR_DELAY    = Math.max(0, arrMs / 16);
+                if (advancedToggle.isSelected()) {
+                    // Values are already in frames
+                    Mino.DAS_DELAY = Math.max(0, dasVal);
+                    Mino.ARR_DELAY = Math.max(0, arrVal);
+                } else {
+                    // Convert ms → frames (60 FPS)
+                    Mino.DAS_DELAY = Math.max(0, (int) Math.round(dasVal / MS_PER_FRAME));
+                    Mino.ARR_DELAY = Math.max(0, (int) Math.round(arrVal / MS_PER_FRAME));
+                }
                 Mino.SDF_MULTIPLIER = Math.max(1, sdf);
 
                 JOptionPane.showMessageDialog(this, "Configuration saved!",
@@ -249,7 +325,7 @@ public class MenuPanel extends JPanel {
     }
 
     private JTextField styledField(String text) {
-        JTextField f = new JTextField(text);
+        JTextField f = new JTextField(text, 8);
         f.setBackground(new Color(30, 30, 60));
         f.setForeground(Color.WHITE);
         f.setCaretColor(Color.WHITE);

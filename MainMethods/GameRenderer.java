@@ -29,10 +29,10 @@ final class GameRenderer {
     private static final int NEXT_ROW_GAP = 6;
 
     void draw(GameManager gm, Graphics2D g2) {
-        final int leftX = gm.left_x;
-        final int rightX = gm.right_x;
-        final int topY = gm.top_y;
-        final int bottomY = gm.bottom_y;
+        final int leftX = gm.getLeftX();
+        final int rightX = gm.getRightX();
+        final int topY = gm.getTopY();
+        final int bottomY = gm.getBottomY();
         final int width = gm.WIDTH;
         final int height = gm.HEIGHT;
 
@@ -65,18 +65,20 @@ final class GameRenderer {
         g2.drawString(holdTitle, holdX + (HUD_PANEL_W - titleFm.stringWidth(holdTitle)) / 2, holdY + 18);
         drawHudDivider(g2, holdX, holdY + HUD_HEADER_H - 1, HUD_PANEL_W);
 
-        /* Five equal rows (tetr.io-style): immediate next + PREVIEW_COUNT queue entries */
+        /*
+         * Five equal rows (tetr.io-style): immediate next + PREVIEW_COUNT queue entries
+         */
         final int nextInnerPadTop = 8;
         final int nextInnerPadBottom = 10;
         int nextColumnTop = previewY + HUD_HEADER_H + nextInnerPadTop;
         int nextColumnH = NEXT_PANEL_H - HUD_HEADER_H - nextInnerPadTop - nextInnerPadBottom;
         int slotH = Math.max(1, (nextColumnH - 4 * NEXT_ROW_GAP) / 5);
 
-        List<Integer> queueList = new ArrayList<>(gm.previewQueue);
+        List<Integer> queueList = new ArrayList<>(gm.getPreviewQueue());
         for (int i = 0; i < 5; i++) {
             int pieceType;
             if (i == 0) {
-                pieceType = gm.nextMinoType;
+                pieceType = gm.getNextMinoType();
             } else if (i - 1 < queueList.size()) {
                 pieceType = queueList.get(i - 1);
             } else {
@@ -86,24 +88,24 @@ final class GameRenderer {
             drawTetrominoPreview(gm, g2, pieceType, previewX, rowTop, HUD_PANEL_W, slotH);
         }
 
-        if (gm.holdMinoType >= 0) {
+        if (gm.getHoldMinoType() >= 0) {
             int holdInnerPadTop = 8;
             int holdInnerPadBottom = 8;
             int holdColumnTop = holdY + HUD_HEADER_H + holdInnerPadTop;
             int holdColumnH = HOLD_PANEL_H - HUD_HEADER_H - holdInnerPadTop - holdInnerPadBottom;
             int holdSlotY = holdColumnTop + Math.max(0, (holdColumnH - slotH) / 2);
-            drawTetrominoPreview(gm, g2, gm.holdMinoType, holdX, holdSlotY, HUD_PANEL_W, slotH);
+            drawTetrominoPreview(gm, g2, gm.getHoldMinoType(), holdX, holdSlotY, HUD_PANEL_W, slotH);
         }
 
         g2.setFont(new Font("Arial", Font.PLAIN, 16));
         g2.setColor(Color.white);
-        g2.drawString("SCORE: " + gm.score, previewX + 8, previewY + NEXT_PANEL_H + 18);
-        g2.drawString("LEVEL: " + gm.level, holdX + 8, holdY + HOLD_PANEL_H + 18);
-        g2.drawString("LINES: " + gm.lines, holdX + 8, holdY + HOLD_PANEL_H + 42);
+        g2.drawString("SCORE: " + gm.getScore(), previewX + 8, previewY + NEXT_PANEL_H + 18);
+        g2.drawString("LEVEL: " + gm.getLevel(), holdX + 8, holdY + HOLD_PANEL_H + 18);
+        g2.drawString("LINES: " + gm.getLines(), holdX + 8, holdY + HOLD_PANEL_H + 42);
 
-        if (gm.currentMino != null) {
+        if (gm.getCurrentMino() != null) {
             drawGhostMino(gm, g2);
-            gm.currentMino.draw(g2);
+            gm.getCurrentMino().draw(g2);
         }
 
         List<Block> blocks = gm.getStaticBlocks();
@@ -111,12 +113,12 @@ final class GameRenderer {
             blocks.get(i).draw(g2);
         }
 
-        if (gm.effectCounterOn) {
+        if (gm.isEffectCounterOn()) {
             int maxDuration = 15;
-            float alpha = 1.0f - (float) gm.effectCounter / maxDuration;
+            float alpha = 1.0f - (float) gm.getEffectCounter() / maxDuration;
 
-            for (int i = 0; i < gm.effectY.size(); i++) {
-                int yEffect = gm.effectY.get(i);
+            for (int i = 0; i < gm.getEffectY().size(); i++) {
+                int yEffect = gm.getEffectY().get(i);
                 g2.setColor(new Color(1.0f, 1.0f, 0.0f, Math.max(0, alpha)));
                 g2.fillRect(leftX, yEffect, width, Block.SIZE);
             }
@@ -124,7 +126,7 @@ final class GameRenderer {
 
         g2.setColor(Color.yellow);
 
-        if (gm.state == GameState.GAME_OVER) {
+        if (gm.getState() == GameState.GAME_OVER) {
             g2.setColor(new Color(0, 0, 0, 150));
             g2.fillRect(0, 0, GamePanel.WIDTH, GamePanel.HEIGHT);
 
@@ -138,7 +140,7 @@ final class GameRenderer {
             String restartText = "Press R to Restart";
             int restartWidth = g2.getFontMetrics().stringWidth(restartText);
             g2.drawString(restartText, GamePanel.WIDTH / 2 - restartWidth / 2, GamePanel.HEIGHT / 2 + 60);
-        } else if (gm.state == GameState.PAUSED) {
+        } else if (gm.getState() == GameState.PAUSED) {
             g2.setColor(new Color(0, 0, 0, 100));
             g2.fillRect(0, 0, GamePanel.WIDTH, GamePanel.HEIGHT);
 
@@ -175,29 +177,31 @@ final class GameRenderer {
     }
 
     private void drawGhostMino(GameManager gm, Graphics2D g2) {
-        int dropDistance = gm.calculateDropDistance(gm.currentMino);
+        int dropDistance = gm.calculateDropDistance(gm.getCurrentMino());
         if (dropDistance <= 0) {
             return;
         }
 
         int margin = 2;
-        Color c = gm.currentMino.b[0].c;
+        Color c = gm.getCurrentMino().b[0].c;
         g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 70));
-        for (int i = 0; i < gm.currentMino.b.length; i++) {
+        for (int i = 0; i < gm.getCurrentMino().b.length; i++) {
             g2.fillRect(
-                    gm.currentMino.b[i].x + margin,
-                    gm.currentMino.b[i].y + dropDistance * Block.SIZE + margin,
+                    gm.getCurrentMino().b[i].x + margin,
+                    gm.getCurrentMino().b[i].y + dropDistance * Block.SIZE + margin,
                     Block.SIZE - 2 * margin,
-                    Block.SIZE - 2 * margin
-            );
+                    Block.SIZE - 2 * margin);
         }
     }
 
     /**
-     * Draws a tetromino scaled to fit the box. Uses a fresh piece at origin — preview queue
-     * entries must not rely on board coordinates (those were unset or huge and broke scaling).
+     * Draws a tetromino scaled to fit the box. Uses a fresh piece at origin —
+     * preview queue
+     * entries must not rely on board coordinates (those were unset or huge and
+     * broke scaling).
      */
-    private void drawTetrominoPreview(GameManager gm, Graphics2D g2, int pieceType, int boxLeft, int boxTop, int boxW, int boxH) {
+    private void drawTetrominoPreview(GameManager gm, Graphics2D g2, int pieceType, int boxLeft, int boxTop, int boxW,
+            int boxH) {
         if (pieceType < 0) {
             return;
         }
@@ -224,12 +228,15 @@ final class GameRenderer {
         int innerW = Math.max(1, boxW - 2 * pad);
         int innerH = Math.max(1, boxH - 2 * pad);
         /*
-         * Fixed cell size for all HUD previews: fits spawn shapes in a 4×2 mino grid (I horizontal, O, etc.).
-         * Same cell for every piece so blocks match the queue rows — no oversized I/HOLD vs thin S/J.
+         * Fixed cell size for all HUD previews: fits spawn shapes in a 4×2 mino grid (I
+         * horizontal, O, etc.).
+         * Same cell for every piece so blocks match the queue rows — no oversized
+         * I/HOLD vs thin S/J.
          */
         int cell = Math.min(innerW / 4, innerH / 2);
-        // Cap the preview piece size so it doesn't look clunky (slightly smaller than board blocks)
-        int maxCellSize = (int)(Block.SIZE * 0.85);
+        // Cap the preview piece size so it doesn't look clunky (slightly smaller than
+        // board blocks)
+        int maxCellSize = (int) (Block.SIZE * 0.85);
         cell = Math.min(cell, maxCellSize);
         cell = Math.max(cell, 1);
 
@@ -247,8 +254,7 @@ final class GameRenderer {
                     drawX + ox * cell + inset,
                     drawY + oy * cell + inset,
                     cell - 2 * inset,
-                    cell - 2 * inset
-            );
+                    cell - 2 * inset);
         }
     }
 }

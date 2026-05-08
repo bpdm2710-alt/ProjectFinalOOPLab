@@ -10,6 +10,7 @@ public class Mino_T extends Mino {
         super(gm);
         create (Color.MAGENTA);
     }
+    @Override
     public void setXY(int x, int y){
         b[0].x = x;
         b[0].y = y;
@@ -20,6 +21,7 @@ public class Mino_T extends Mino {
         b[3].x = b[0].x + Block.SIZE;
         b[3].y = b[0].y;
     }
+    @Override
     public void getDirection1() {
         //   o
         // o o o
@@ -34,6 +36,7 @@ public class Mino_T extends Mino {
 
         updateXY(1);
     }
+    @Override
     public void getDirection2() {
         // o
         // o o
@@ -49,6 +52,7 @@ public class Mino_T extends Mino {
 
         updateXY(2);
     }
+    @Override
     public void getDirection3() {
         // o o o
         //   o
@@ -63,6 +67,7 @@ public class Mino_T extends Mino {
 
         updateXY(3);
     }
+    @Override
     public void getDirection4() {
         //   o
         // o o

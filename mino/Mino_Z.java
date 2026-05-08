@@ -9,6 +9,7 @@ public class Mino_Z extends Mino {
         super(gm);
         create(Color.RED);
     }
+    @Override
     public void setXY(int x, int y){
         b[0].x = x;
         b[0].y = y;
@@ -19,6 +20,7 @@ public class Mino_Z extends Mino {
         b[3].x = b[0].x - Block.SIZE;
         b[3].y = b[0].y - Block.SIZE;
     }
+    @Override
     public void getDirection1() {
         // o o
         //   o o
@@ -33,6 +35,7 @@ public class Mino_Z extends Mino {
 
         updateXY(1);
     }
+    @Override
     public void getDirection2() {
         //   o
         // o o
@@ -48,6 +51,7 @@ public class Mino_Z extends Mino {
 
         updateXY(2);
     }
+    @Override
     public void getDirection3() {
         // o o /   o o (shape same as dir 1; state 3 for SRS)
         tempB[0].x = b[0].x;
@@ -60,6 +64,7 @@ public class Mino_Z extends Mino {
         tempB[3].y = b[0].y - Block.SIZE;
         updateXY(3);
     }
+    @Override
     public void getDirection4() {
         // vertical (shape same as dir 2; state 4 for SRS)
         tempB[0].x = b[0].x;
