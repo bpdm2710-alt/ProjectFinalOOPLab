@@ -112,7 +112,7 @@ public class GamePanel extends JPanel implements Runnable {
         
         Thread temp = gameThread;
         gameThread = null; // Stop the game loop thread
-        if (temp != null) {
+        if (temp != null && Thread.currentThread() != temp) {
             try {
                 temp.join();
             } catch (InterruptedException e) {
