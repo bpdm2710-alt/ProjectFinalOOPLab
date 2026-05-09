@@ -1,153 +1,124 @@
 package MainMethods;
 
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-
+import java.awt.RenderingHints;
 import javax.swing.JPanel;
-import java.awt.CardLayout;
 
+/** Runs the 60 FPS game loop and asks the manager to render everything. */
 public class GamePanel extends JPanel implements Runnable {
-    public static final int WIDTH = 1280;
+    public static final int WIDTH = 640;
     public static final int HEIGHT = 720;
     public static final int FPS = 60;
-    private volatile Thread gameThread;
-    GameManager gameManager;
+
+    final GameManager gameManager;
     private final Sound music = new Sound();
-    private final Sound effect = new Sound();
     private final KeyHandler keyHandler = new KeyHandler();
-
-    public Sound getMusic() {
-        return music;
-    }
-
-    public Sound getEffect() {
-        return effect;
-    }
-
-    private static final int ESC_HOLD_FRAMES = 30; // 0.5s at 60fps
-    private int escHoldCounter = 0;
+    private volatile boolean running;
+    private volatile Thread gameThread;
     private CardLayout cardLayout;
     private JPanel mainContainer;
 
+    /** Builds the playfield panel and wires keyboard input. */
     public GamePanel() {
-        this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
-        this.setBackground(Color.black);
-        this.setLayout(null);
-
-        this.addKeyListener(keyHandler);
-        this.setFocusable(true);
-
-        gameManager = new GameManager(keyHandler, music, effect);
+        setPreferredSize(new Dimension(WIDTH, HEIGHT));
+        setBackground(new Color(18, 18, 22));
+        setFocusable(true);
+        addKeyListener(keyHandler);
+        gameManager = new GameManager(keyHandler, music);
     }
 
+    /** Stores the navigation objects used to return to the menu. */
     public void setNavigation(CardLayout cardLayout, JPanel mainContainer) {
         this.cardLayout = cardLayout;
         this.mainContainer = mainContainer;
     }
 
-    public void launchGame() {
-        gameThread = new Thread(this);
-        gameThread.start();
-
-        music.playAndLoop(0);
-    }
-
-    public boolean isRunning() {
-        return gameThread != null && gameThread.isAlive();
-    }
-
-    public void togglePause() {
-        if (gameManager.getState() == GameState.GAME_OVER) {
-            return;
-        }
-
-        gameManager.togglePause();
-        if (gameManager.getState() == GameState.PAUSED) {
-            music.pause();
-        } else {
-            music.resume();
-        }
-    }
-
-    public void restartGame() {
-        gameManager.restartGame();
-        music.playAndLoop(0);
-    }
-
-    private void update() {
-        // ESC hold to return to menu
-        if (keyHandler.isEscPressed()) {
-            escHoldCounter++;
-            if (escHoldCounter >= ESC_HOLD_FRAMES) {
-                returnToMenu();
-                return;
-            }
-        } else {
-            escHoldCounter = 0;
-        }
-
-        if (keyHandler.consumePause()) {
-            togglePause();
-        }
-
-        if (keyHandler.consumeRestart()) {
-            if (gameManager.getState() == GameState.GAME_OVER) {
-                restartGame();
-                keyHandler.resetTransientInput();
-            }
-            // else: ignore R while playing — intentionally consumed
-        }
-
-        if (gameManager.getState() == GameState.PLAYING) {
-            gameManager.update();
-        }
-    }
-
-    private void returnToMenu() {
-        music.stop();
+    /** Starts or restarts the current game mode. */
+    public void startGame(boolean practiceMode) {
+        gameManager.reset(practiceMode);
         keyHandler.resetTransientInput();
-        escHoldCounter = 0;
-        
-        Thread temp = gameThread;
-        gameThread = null; // Stop the game loop thread
-        if (temp != null && Thread.currentThread() != temp) {
-            try {
-                temp.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        music.playBgm();
+        if (!running) {
+            running = true;
+            gameThread = new Thread(this, "ClassicTetrisLoop");
+            gameThread.start();
         }
-        
+        requestFocusInWindow();
+    }
+
+    /** Returns true while the loop thread is active. */
+    public boolean isRunning() {
+        return running;
+    }
+
+    /** Returns to the menu screen and stops the loop. */
+    public void returnToMenu() {
+        running = false;
+        gameThread = null;
+        music.stopBgm();
+        keyHandler.resetTransientInput();
         if (cardLayout != null && mainContainer != null) {
             cardLayout.show(mainContainer, "MENU");
         }
     }
 
+    /** Updates input and game state once per frame. */
+    private void update() {
+        if (keyHandler.consumeMenu()) {
+            returnToMenu();
+            return;
+        }
+
+        if (gameManager.isGameOver()) {
+            if (keyHandler.consumeRestart()) {
+                gameManager.reset(gameManager.isPracticeMode());
+                music.playBgm();
+            }
+            return;
+        }
+
+        if (keyHandler.consumeRestart()) {
+            gameManager.reset(gameManager.isPracticeMode());
+            music.playBgm();
+            return;
+        }
+
+        gameManager.update();
+    }
+
+    /** Paints the board, piece, HUD, and overlay. */
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-
         Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         gameManager.draw(g2);
     }
 
+    /** Runs the frame loop at roughly 60 FPS. */
     @Override
     public void run() {
-        double DRAW_INTERVAL = 1000000000 / FPS;
-        double delta = 0;
-        long lastTime = System.nanoTime();
-        long currentTime;
-        while (gameThread != null) {
-            currentTime = System.nanoTime();
-            delta += (currentTime - lastTime) / DRAW_INTERVAL;
-            lastTime = currentTime;
-
-            if (delta >= 1) {
-                update();
-                repaint();
-                delta--;
+        long frameLength = 1_000_000_000L / FPS;
+        Thread currentThread = Thread.currentThread();
+        while (running && gameThread == currentThread) {
+            long frameStart = System.nanoTime();
+            update();
+            repaint();
+            long waitTime = frameLength - (System.nanoTime() - frameStart);
+            if (waitTime > 0) {
+                try {
+                    Thread.sleep(waitTime / 1_000_000L, (int) (waitTime % 1_000_000L));
+                } catch (InterruptedException exception) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
             }
         }
+        running = false;
     }
 }

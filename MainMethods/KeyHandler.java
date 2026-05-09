@@ -4,150 +4,100 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Input: EDT sets flags; game thread consumes with {@code getAndSet(false)}-style methods
- * so key events are not lost between threads.
- */
+/** Stores simple one-shot input flags for the game loop. */
 public class KeyHandler implements KeyListener {
     private final AtomicBoolean leftPressed = new AtomicBoolean(false);
     private final AtomicBoolean rightPressed = new AtomicBoolean(false);
     private final AtomicBoolean downPressed = new AtomicBoolean(false);
-    private final AtomicBoolean rotateClockwisePressed = new AtomicBoolean(false);
-    private final AtomicBoolean rotateCounterClockwisePressed = new AtomicBoolean(false);
-    private final AtomicBoolean rotateHalfTurnPressed = new AtomicBoolean(false);
+    private final AtomicBoolean rotatePressed = new AtomicBoolean(false);
     private final AtomicBoolean hardDropPressed = new AtomicBoolean(false);
-    private final AtomicBoolean holdPressed = new AtomicBoolean(false);
     private final AtomicBoolean restartPressed = new AtomicBoolean(false);
-    private final AtomicBoolean pausePressed = new AtomicBoolean(false);
-    private final AtomicBoolean escPressed = new AtomicBoolean(false);
+    private final AtomicBoolean menuPressed = new AtomicBoolean(false);
 
-    public boolean isLeftPressed() {
-        return leftPressed.get();
-    }
-
-    public boolean isRightPressed() {
-        return rightPressed.get();
-    }
-
+    /** Returns whether the soft-drop key is held. */
     public boolean isDownPressed() {
         return downPressed.get();
     }
 
-    public boolean isEscPressed() {
-        return escPressed.get();
-    }
-
+    /** Consumes a left-move request. */
     public boolean consumeLeft() {
         return leftPressed.getAndSet(false);
     }
 
+    /** Consumes a right-move request. */
     public boolean consumeRight() {
         return rightPressed.getAndSet(false);
     }
 
-    public boolean consumeDown() {
-        return downPressed.getAndSet(false);
+    /** Consumes a rotate request. */
+    public boolean consumeRotate() {
+        return rotatePressed.getAndSet(false);
     }
 
-    public boolean consumeRotateClockwise() {
-        return rotateClockwisePressed.getAndSet(false);
-    }
-
-    public boolean consumeRotateCounterClockwise() {
-        return rotateCounterClockwisePressed.getAndSet(false);
-    }
-
-    public boolean consumeRotateHalfTurn() {
-        return rotateHalfTurnPressed.getAndSet(false);
-    }
-
+    /** Consumes a hard-drop request. */
     public boolean consumeHardDrop() {
         return hardDropPressed.getAndSet(false);
     }
 
-    public boolean consumeHold() {
-        return holdPressed.getAndSet(false);
-    }
-
+    /** Consumes a restart request. */
     public boolean consumeRestart() {
         return restartPressed.getAndSet(false);
     }
 
-    public boolean consumePause() {
-        return pausePressed.getAndSet(false);
+    /** Consumes a menu request. */
+    public boolean consumeMenu() {
+        return menuPressed.getAndSet(false);
     }
 
-    /** Clears one-shot action flags (e.g. after restart). */
+    /** Clears all transient input flags. */
     public void resetTransientInput() {
         leftPressed.set(false);
         rightPressed.set(false);
         downPressed.set(false);
-        rotateClockwisePressed.set(false);
-        rotateCounterClockwisePressed.set(false);
-        rotateHalfTurnPressed.set(false);
+        rotatePressed.set(false);
         hardDropPressed.set(false);
-        holdPressed.set(false);
         restartPressed.set(false);
-        pausePressed.set(false);
-        escPressed.set(false);
+        menuPressed.set(false);
     }
 
+    /** Unused by this game. */
     @Override
-    public void keyTyped(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {
+    }
 
+    /** Stores the pressed key as a simple flag. */
     @Override
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
-
         if (code == KeyEvent.VK_LEFT) {
             leftPressed.set(true);
-        }
-        if (code == KeyEvent.VK_RIGHT) {
+        } else if (code == KeyEvent.VK_RIGHT) {
             rightPressed.set(true);
-        }
-        if (code == KeyEvent.VK_DOWN) {
+        } else if (code == KeyEvent.VK_DOWN) {
             downPressed.set(true);
-        }
-        if (code == KeyEvent.VK_UP || code == KeyEvent.VK_X) {
-            rotateClockwisePressed.set(true);
-        }
-        if (code == KeyEvent.VK_Z) {
-            rotateCounterClockwisePressed.set(true);
-        }
-        if (code == KeyEvent.VK_A) {
-            rotateHalfTurnPressed.set(true);
-        }
-        if (code == KeyEvent.VK_SPACE) {
+        } else if (code == KeyEvent.VK_UP || code == KeyEvent.VK_X) {
+            rotatePressed.set(true);
+        } else if (code == KeyEvent.VK_SPACE) {
             hardDropPressed.set(true);
-        }
-        if (code == KeyEvent.VK_C) {
-            holdPressed.set(true);
-        }
-        if (code == KeyEvent.VK_R) {
+        } else if (code == KeyEvent.VK_R) {
             restartPressed.set(true);
-        }
-        if (code == KeyEvent.VK_P) {
-            pausePressed.set(true);
-        }
-        if (code == KeyEvent.VK_ESCAPE) {
-            escPressed.set(true);
+        } else if (code == KeyEvent.VK_ESCAPE) {
+            menuPressed.set(true);
         }
     }
 
+    /** Clears held keys when they are released. */
     @Override
     public void keyReleased(KeyEvent e) {
         int code = e.getKeyCode();
         if (code == KeyEvent.VK_LEFT) {
             leftPressed.set(false);
-        }
-        if (code == KeyEvent.VK_RIGHT) {
+        } else if (code == KeyEvent.VK_RIGHT) {
             rightPressed.set(false);
-        }
-        if (code == KeyEvent.VK_DOWN) {
+        } else if (code == KeyEvent.VK_DOWN) {
             downPressed.set(false);
-        }
-        if (code == KeyEvent.VK_ESCAPE) {
-            escPressed.set(false);
+        } else if (code == KeyEvent.VK_ESCAPE) {
+            menuPressed.set(false);
         }
     }
 }

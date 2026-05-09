@@ -1,104 +1,78 @@
 package MainMethods;
 
 import java.io.File;
-import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineEvent;
-import javax.sound.sampled.LineListener;
-import javax.sound.sampled.LineEvent.Type;
 
+/** Plays the BGM and the two short WAV effects used by the game. */
 public class Sound {
-    
-    Clip musicClip;
-    File soundFiles[] = new File[5];
+    private final File[] soundFiles = new File[3];
+    private Clip musicClip;
 
-    public Sound(){
-        // Sound index mapping:
-        // 0 = Tetris 99 Main Theme (background music)
-        // 1 = Delete line effect
-        // 2 = Game over
-        // 3 = Rotate
-        // 4 = Touch floor
-        
+    /** Loads the audio files from the local Sound folder. */
+    public Sound() {
         String soundDir = "Sound/";
         soundFiles[0] = new File(soundDir + "Tetris 99 - Main Theme - SoundHub.wav");
         soundFiles[1] = new File(soundDir + "delete line.wav");
         soundFiles[2] = new File(soundDir + "gameover.wav");
-        soundFiles[3] = new File(soundDir + "rotation.wav");
-        soundFiles[4] = new File(soundDir + "touch floor.wav");
     }
 
-    public void playEffect(int i) {
-        playClip(i, false);
+    /** Starts looping the background music. */
+    public void playBgm() {
+        playClip(0, true);
     }
 
-    public void playAndLoop(int i) {
-        playClip(i, true);
+    /** Plays the line-clear effect once. */
+    public void playLineClear() {
+        playClip(1, false);
     }
 
-    private void playClip(int i, boolean loop) {
+    /** Plays the game-over effect once. */
+    public void playGameOver() {
+        playClip(2, false);
+    }
+
+    /** Opens and starts one WAV clip. */
+    private void playClip(int index, boolean loop) {
         try {
-            if (i < 0 || i >= soundFiles.length || soundFiles[i] == null) {
-                System.err.println("Sound file index out of range: " + i);
+            if (index < 0 || index >= soundFiles.length) {
+                return;
+            }
+            File soundFile = soundFiles[index];
+            if (soundFile == null || !soundFile.exists()) {
                 return;
             }
 
-            // Stop previous music if playing
-            if (i == 0 && musicClip != null && musicClip.isRunning()) {
-                musicClip.stop();
-                musicClip.close();
-                musicClip = null;
-            }
-
-            File soundFile = soundFiles[i];
-            if (!soundFile.exists()) {
-                System.err.println("Sound file not found: " + soundFile.getAbsolutePath());
-                return;
+            if (index == 0) {
+                stopBgm();
             }
 
             Clip clip = AudioSystem.getClip();
-            
-            if (i == 0) {
-                musicClip = clip; // Save music clip for pause/resume
-            }
-            
-            try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(soundFile)) {
-                clip.open(audioInputStream);
+            try (AudioInputStream input = AudioSystem.getAudioInputStream(soundFile)) {
+                clip.open(input);
             }
 
+            if (index == 0) {
+                musicClip = clip;
+            }
             if (loop) {
                 clip.loop(Clip.LOOP_CONTINUOUSLY);
-            } else {
-                clip.addLineListener(new LineListener() {
-                    @Override
-                    public void update(LineEvent event) {
-                        if (event.getType() == Type.STOP) {
-                            javax.swing.SwingUtilities.invokeLater(() -> {
-                                try {
-                                    clip.close();
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            });
-                        }
-                    }
-                });
             }
             clip.start();
-
-        } catch (Exception e) {
-            System.err.println("Error playing sound: " + e.getMessage());
-            e.printStackTrace();
+        } catch (Exception exception) {
+            System.err.println("Sound error: " + exception.getMessage());
         }
     }
 
+    /** Pauses the looping background music. */
     public void pause() {
         if (musicClip != null && musicClip.isRunning()) {
             musicClip.stop();
         }
     }
 
+    /** Resumes the looping background music. */
     public void resume() {
         if (musicClip != null && musicClip.isOpen() && !musicClip.isRunning()) {
             musicClip.start();
@@ -106,7 +80,13 @@ public class Sound {
         }
     }
 
+    /** Stops and releases the looping background music. */
     public void stop() {
+        stopBgm();
+    }
+
+    /** Stops the BGM clip if it exists. */
+    public void stopBgm() {
         if (musicClip != null) {
             musicClip.stop();
             musicClip.close();
