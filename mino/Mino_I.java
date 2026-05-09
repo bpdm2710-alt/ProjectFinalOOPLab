@@ -29,61 +29,59 @@ public class Mino_I extends Mino {
     }
     @Override
     public void getDirection1 () {
-        // 
-        // o o o o
-        // 
-        tempB[0].x = b[0].x;
-        tempB[0].y = b[0].y;
-        tempB[1].x = b[0].x - Block.SIZE;
-        tempB[1].y = b[0].y;
-        tempB[2].x = b[0].x + Block.SIZE;
-        tempB[2].y = b[0].y;
-        tempB[3].x = b[0].x + Block.SIZE * 2;
-        tempB[3].y = b[0].y;
-
-        updateXY(1);
+        getDirection(1);
     }
     @Override
     public void getDirection2 () {
-        // o
-        // o
-        // o
-        // o
-        tempB[0].x = b[0].x;
-        tempB[0].y = b[0].y;
-        tempB[1].x = b[0].x;
-        tempB[1].y = b[0].y - Block.SIZE;
-        tempB[2].x = b[0].x;
-        tempB[2].y = b[0].y + Block.SIZE;
-        tempB[3].x = b[0].x;
-        tempB[3].y = b[0].y + Block.SIZE * 2;
-        
-        updateXY(2);
+        getDirection(2);
     }
     @Override
     public void getDirection3() {
-        // horizontal (same shape as state 1; direction index must be 3 for SRS)
-        tempB[0].x = b[0].x;
-        tempB[0].y = b[0].y;
-        tempB[1].x = b[0].x - Block.SIZE;
-        tempB[1].y = b[0].y;
-        tempB[2].x = b[0].x + Block.SIZE;
-        tempB[2].y = b[0].y;
-        tempB[3].x = b[0].x + Block.SIZE * 2;
-        tempB[3].y = b[0].y;
-        updateXY(3);
+        getDirection(3);
     }
     @Override
     public void getDirection4() {
-        // vertical (same shape as state 2)
-        tempB[0].x = b[0].x;
-        tempB[0].y = b[0].y;
-        tempB[1].x = b[0].x;
-        tempB[1].y = b[0].y - Block.SIZE;
-        tempB[2].x = b[0].x;
-        tempB[2].y = b[0].y + Block.SIZE;
-        tempB[3].x = b[0].x;
-        tempB[3].y = b[0].y + Block.SIZE * 2;
-        updateXY(4);
+        getDirection(4);
+    }
+
+    private void getDirection(int targetDir) {
+        int pivotX = b[0].x;
+        int pivotY = b[0].y;
+        
+        // Calculate absolute pivot based on current direction's b[0] offset
+        if (direction == 1) {
+            pivotX += Block.SIZE;
+            pivotY += Block.SIZE;
+        } else if (direction == 2) {
+            pivotY += Block.SIZE;
+        } else if (direction == 3) {
+            pivotX += Block.SIZE;
+        } else if (direction == 4) {
+            pivotX += Block.SIZE;
+            pivotY += Block.SIZE;
+        }
+
+        if (targetDir == 1) {
+            tempB[0].x = pivotX - Block.SIZE; tempB[0].y = pivotY - Block.SIZE;
+            tempB[1].x = pivotX - Block.SIZE * 2; tempB[1].y = pivotY - Block.SIZE;
+            tempB[2].x = pivotX; tempB[2].y = pivotY - Block.SIZE;
+            tempB[3].x = pivotX + Block.SIZE; tempB[3].y = pivotY - Block.SIZE;
+        } else if (targetDir == 2) {
+            tempB[0].x = pivotX; tempB[0].y = pivotY - Block.SIZE;
+            tempB[1].x = pivotX; tempB[1].y = pivotY - Block.SIZE * 2;
+            tempB[2].x = pivotX; tempB[2].y = pivotY;
+            tempB[3].x = pivotX; tempB[3].y = pivotY + Block.SIZE;
+        } else if (targetDir == 3) {
+            tempB[0].x = pivotX - Block.SIZE; tempB[0].y = pivotY;
+            tempB[1].x = pivotX - Block.SIZE * 2; tempB[1].y = pivotY;
+            tempB[2].x = pivotX; tempB[2].y = pivotY;
+            tempB[3].x = pivotX + Block.SIZE; tempB[3].y = pivotY;
+        } else if (targetDir == 4) {
+            tempB[0].x = pivotX - Block.SIZE; tempB[0].y = pivotY - Block.SIZE;
+            tempB[1].x = pivotX - Block.SIZE; tempB[1].y = pivotY - Block.SIZE * 2;
+            tempB[2].x = pivotX - Block.SIZE; tempB[2].y = pivotY;
+            tempB[3].x = pivotX - Block.SIZE; tempB[3].y = pivotY + Block.SIZE;
+        }
+        updateXY(targetDir);
     }
 }

@@ -65,6 +65,7 @@ public class Sound {
             
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(soundFile);
             clip.open(audioInputStream);
+            audioInputStream.close();
 
             if (loop) {
                 clip.loop(Clip.LOOP_CONTINUOUSLY);

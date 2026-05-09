@@ -14,8 +14,16 @@ public class GamePanel extends JPanel implements Runnable {
     public static final int FPS = 60;
     Thread gameThread;
     GameManager gameManager;
-    public static Sound music = new Sound();
-    public static Sound effect = new Sound();
+    private static final Sound music = new Sound();
+    private static final Sound effect = new Sound();
+
+    public static Sound getMusic() {
+        return music;
+    }
+
+    public static Sound getEffect() {
+        return effect;
+    }
 
     private static final int ESC_HOLD_FRAMES = 30; // 0.5s at 60fps
     private int escHoldCounter = 0;
@@ -43,6 +51,10 @@ public class GamePanel extends JPanel implements Runnable {
         gameThread.start();
 
         music.playAndLoop(0);
+    }
+
+    public boolean isRunning() {
+        return gameThread != null && gameThread.isAlive();
     }
 
     public void togglePause() {

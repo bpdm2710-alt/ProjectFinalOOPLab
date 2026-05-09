@@ -193,11 +193,11 @@ public class MenuPanel extends JPanel {
         cardLayout.show(mainContainer, "GAME");
         gamePanel.requestFocusInWindow();
 
-        if (gamePanel.gameThread == null || !gamePanel.gameThread.isAlive()) {
+        if (!gamePanel.isRunning()) {
             gamePanel.launchGame();
         } else {
             gamePanel.gameManager.restartGame();
-            GamePanel.music.playAndLoop(0);
+            GamePanel.getMusic().playAndLoop(0);
         }
     }
 

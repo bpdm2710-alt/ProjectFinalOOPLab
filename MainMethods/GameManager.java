@@ -331,8 +331,8 @@ public class GameManager {
 
             if (isSpawnBlocked()) {
                 state = GameState.GAME_OVER;
-                GamePanel.music.stop();
-                GamePanel.effect.playEffect(2);
+                GamePanel.getMusic().stop();
+                GamePanel.getEffect().playEffect(2);
                 return;
             }
 
@@ -375,10 +375,7 @@ public class GameManager {
         if (lineCount > 0) {
             lines += lineCount;
             if (!practiceMode) {
-                level = lines / 5 + 1;
-
-                double secondsPerRow = Math.pow(Math.max(0.01, 0.8 - ((level - 1) * 0.007)), level - 1);
-                dropInterval = Math.max(1, (int) (secondsPerRow * GamePanel.FPS));
+                recalculateDropInterval();
             }
 
             for (int i = 0; i < staticBlocks.size(); i++) {
@@ -391,9 +388,15 @@ public class GameManager {
                 staticBlocks.get(i).y += shift * Block.SIZE;
             }
 
-            GamePanel.effect.playEffect(1);
+            GamePanel.getEffect().playEffect(1);
             score += scoringStrategy.calculate(lineCount, level);
         }
+    }
+
+    private void recalculateDropInterval() {
+        level = lines / 5 + 1;
+        double secondsPerRow = Math.pow(Math.max(0.01, 0.8 - ((level - 1) * 0.007)), level - 1);
+        dropInterval = Math.max(1, (int) (secondsPerRow * GamePanel.FPS));
     }
 
     public void draw(Graphics2D g2) {
@@ -458,7 +461,7 @@ public class GameManager {
 
         currentMino.deactivating = false;
         currentMino.activeMino = false;
-        GamePanel.effect.playEffect(4);
+        GamePanel.getEffect().playEffect(4);
     }
 
     int calculateDropDistance(Mino mino) {

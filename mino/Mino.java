@@ -10,9 +10,9 @@ public class Mino {
     /** Lock delay at 60 FPS ≈ 0.75 s (Tetris Guideline-style). */
     public static final int LOCK_DELAY_FRAMES = 45;
 
-    public static int DAS_DELAY = 10;
-    public static int ARR_DELAY = 2;
-    public static int SDF_MULTIPLIER = 20;
+    public static volatile int DAS_DELAY = 10;
+    public static volatile int ARR_DELAY = 2;
+    public static volatile int SDF_MULTIPLIER = 20;
     public static final int MAX_LOCK_RESETS = 15;
 
     protected int dasLeftCounter = 0;
@@ -105,9 +105,7 @@ public class Mino {
     public void getDirection4() {
     }
 
-    public void checkRotationCollision() {
-        canPlaceTempBlocks(0, 0);
-    }
+
 
     public void checkMovementCollision() {
         rightCollision = false;
@@ -233,19 +231,19 @@ public class Mino {
         boolean rotated = false;
         if (KeyHandler.consumeRotateClockwise()) {
             if (rotateClockwise()) {
-                GamePanel.effect.playEffect(3);
+                GamePanel.getEffect().playEffect(3);
                 rotated = true;
             }
         }
         if (KeyHandler.consumeRotateCounterClockwise()) {
             if (rotateCounterClockwise()) {
-                GamePanel.effect.playEffect(3);
+                GamePanel.getEffect().playEffect(3);
                 rotated = true;
             }
         }
         if (KeyHandler.consumeRotateHalfTurn()) {
             if (rotateHalfTurn()) {
-                GamePanel.effect.playEffect(3);
+                GamePanel.getEffect().playEffect(3);
                 rotated = true;
             }
         }
@@ -264,7 +262,7 @@ public class Mino {
 
         if (downCollision) {
             if (deactivating == false && !wasDownCollision) {
-                GamePanel.effect.playEffect(4);
+                GamePanel.getEffect().playEffect(4);
             }
             deactivating = true;
             wasDownCollision = true;
@@ -361,10 +359,9 @@ public class Mino {
     }
 
     private boolean canPlaceTempBlocks(int offsetX, int offsetY) {
-        // Reset collision flags ONCE at the beginning
-        rightCollision = false;
-        leftCollision = false;
-        downCollision = false;
+        boolean left = false;
+        boolean right = false;
+        boolean down = false;
 
         for (int i = 0; i < b.length; i++) {
             int nextX = tempB[i].x + offsetX * Block.SIZE;
@@ -372,13 +369,13 @@ public class Mino {
 
             // Check boundary collisions
             if (nextX < gm.getLeftX()) {
-                leftCollision = true;
+                left = true;
             }
             if (nextX + Block.SIZE > gm.getRightX()) {
-                rightCollision = true;
+                right = true;
             }
             if (nextY + Block.SIZE > gm.getBottomY()) {
-                downCollision = true;
+                down = true;
             }
 
             // Check static block collisions
@@ -386,14 +383,12 @@ public class Mino {
             for (int j = 0; j < staticBlocks.size(); j++) {
                 Block staticBlock = staticBlocks.get(j);
                 if (nextX == staticBlock.x && nextY == staticBlock.y) {
-                    // FIX #2: Block occupies exact position - cannot place here
-                    // Use downCollision as general "blocked" flag
-                    downCollision = true;
+                    down = true;
                 }
             }
         }
 
-        return !leftCollision && !rightCollision && !downCollision;
+        return !left && !right && !down;
     }
 
     private void applyTempBlocks(int newDirection, int offsetX, int offsetY) {
