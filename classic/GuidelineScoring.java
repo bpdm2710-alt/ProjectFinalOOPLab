@@ -1,4 +1,4 @@
-package MainMethods;
+package classic;
 
 public class GuidelineScoring implements ScoringStrategy {
     private static final int[] BASE = {0, 100, 300, 500, 800};

@@ -1,4 +1,4 @@
-package MainMethods;
+package classic;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /** Stores the board, the falling piece, scoring, and rendering. */
@@ -29,6 +31,7 @@ public class GameManager {
     private final ScoringStrategy scoringStrategy = new GuidelineScoring();
     private final Color[] colors = { Color.CYAN, Color.YELLOW, new Color(170, 80, 220), Color.GREEN, Color.RED,
             Color.BLUE, Color.ORANGE };
+    private final List<ScoreListener> scoreListeners = new ArrayList<>();
 
     private Tetromino currentPiece;
     private Tetromino nextPiece;
@@ -69,6 +72,15 @@ public class GameManager {
         nextPiece = TetrominoFactory.createRandom(random);
         pieceX = 3;
         pieceY = 0;
+        notifyScoreListeners();
+    }
+
+    /** Registers a listener that receives score, level, and line updates. */
+    public void addScoreListener(ScoreListener listener) {
+        if (listener != null && !scoreListeners.contains(listener)) {
+            scoreListeners.add(listener);
+            listener.onScoreChanged(score, level, lines, highScore);
+        }
     }
 
     /** Updates input, gravity, and piece locking. */
@@ -193,6 +205,10 @@ public class GameManager {
             score += scoringStrategy.calculate(cleared, level);
             level = 1 + lines / 10;
             sound.playLineClear();
+            if (score > highScore) {
+                highScore = score;
+            }
+            notifyScoreListeners();
         }
     }
 
@@ -397,6 +413,14 @@ public class GameManager {
             Files.writeString(HIGH_SCORE_FILE, String.valueOf(highScore), StandardCharsets.UTF_8);
         } catch (IOException exception) {
             System.err.println("Could not save high score: " + exception.getMessage());
+        }
+        notifyScoreListeners();
+    }
+
+    /** Notifies all score listeners with the latest values. */
+    private void notifyScoreListeners() {
+        for (ScoreListener listener : scoreListeners) {
+            listener.onScoreChanged(score, level, lines, highScore);
         }
     }
 }

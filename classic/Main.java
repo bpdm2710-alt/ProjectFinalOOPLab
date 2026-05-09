@@ -1,4 +1,4 @@
-package MainMethods;
+package classic;
 
 import java.awt.CardLayout;
 import javax.swing.JFrame;

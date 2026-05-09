@@ -1,4 +1,4 @@
-package MainMethods;
+package classic;
 
 import java.io.File;
 import javax.sound.sampled.AudioInputStream;

@@ -1,4 +1,4 @@
-package MainMethods;
+package classic;
 
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -9,7 +9,7 @@ import java.awt.RenderingHints;
 import javax.swing.JPanel;
 
 /** Runs the 60 FPS game loop and asks the manager to render everything. */
-public class GamePanel extends JPanel implements Runnable {
+public class GamePanel extends JPanel implements Runnable, ScoreListener {
     public static final int WIDTH = 640;
     public static final int HEIGHT = 720;
     public static final int FPS = 60;
@@ -29,6 +29,7 @@ public class GamePanel extends JPanel implements Runnable {
         setFocusable(true);
         addKeyListener(keyHandler);
         gameManager = new GameManager(keyHandler, music);
+        gameManager.addScoreListener(this);
     }
 
     /** Stores the navigation objects used to return to the menu. */
@@ -81,12 +82,6 @@ public class GamePanel extends JPanel implements Runnable {
             return;
         }
 
-        if (keyHandler.consumeRestart()) {
-            gameManager.reset(gameManager.isPracticeMode());
-            music.playBgm();
-            return;
-        }
-
         gameManager.update();
     }
 
@@ -120,5 +115,11 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
         running = false;
+    }
+
+    /** Receives score updates from the game manager. */
+    @Override
+    public void onScoreChanged(int score, int level, int lines, int highScore) {
+        // Reserved for future HUD extraction.
     }
 }

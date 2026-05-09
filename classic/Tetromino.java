@@ -1,8 +1,6 @@
-package MainMethods;
+package classic;
 
 import java.awt.Color;
-import java.util.Random;
-
 /** Holds one tetromino type, its four rotations, and its display color. */
 public class Tetromino {
     private static final int[][][][] SHAPES = {
@@ -103,21 +101,4 @@ public class Tetromino {
         return COLORS[type];
     }
 
-    /** Creates a copy with the same type and rotation. */
-    public Tetromino copy() {
-        Tetromino copy = new Tetromino(type);
-        copy.setRotation(rotation);
-        return copy;
-    }
-}
-
-/** Small factory used to create random pieces. */
-final class TetrominoFactory {
-    private TetrominoFactory() {
-    }
-
-    /** Creates a random tetromino. */
-    static Tetromino createRandom(Random random) {
-        return new Tetromino(random.nextInt(7));
-    }
 }
