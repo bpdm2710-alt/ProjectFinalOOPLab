@@ -27,6 +27,9 @@ final class GameRenderer {
     private static final int HUD_HEADER_H = 28;
     /** Vertical gap between stacked NEXT preview rows. */
     private static final int NEXT_ROW_GAP = 6;
+    
+    private static final float GAME_OVER_FONT_SIZE = 60f;
+    private static final float SUBTEXT_FONT_SIZE = 32f;
 
     void draw(GameManager gm, Graphics2D g2) {
         final int leftX = gm.getLeftX();
@@ -131,12 +134,12 @@ final class GameRenderer {
             g2.fillRect(0, 0, GamePanel.WIDTH, GamePanel.HEIGHT);
 
             g2.setColor(Color.yellow);
-            g2.setFont(g2.getFont().deriveFont(60f));
+            g2.setFont(g2.getFont().deriveFont(GAME_OVER_FONT_SIZE));
             String gameOverText = "GAME OVER";
             int textWidth = g2.getFontMetrics().stringWidth(gameOverText);
             g2.drawString(gameOverText, GamePanel.WIDTH / 2 - textWidth / 2, GamePanel.HEIGHT / 2 - 40);
 
-            g2.setFont(g2.getFont().deriveFont(32f));
+            g2.setFont(g2.getFont().deriveFont(SUBTEXT_FONT_SIZE));
             String restartText = "Press R to Restart";
             int restartWidth = g2.getFontMetrics().stringWidth(restartText);
             g2.drawString(restartText, GamePanel.WIDTH / 2 - restartWidth / 2, GamePanel.HEIGHT / 2 + 60);
@@ -145,12 +148,12 @@ final class GameRenderer {
             g2.fillRect(0, 0, GamePanel.WIDTH, GamePanel.HEIGHT);
 
             g2.setColor(Color.yellow);
-            g2.setFont(g2.getFont().deriveFont(60f));
+            g2.setFont(g2.getFont().deriveFont(GAME_OVER_FONT_SIZE));
             String pausedText = "PAUSED";
             int pausedWidth = g2.getFontMetrics().stringWidth(pausedText);
             g2.drawString(pausedText, GamePanel.WIDTH / 2 - pausedWidth / 2, GamePanel.HEIGHT / 2 - 40);
 
-            g2.setFont(g2.getFont().deriveFont(32f));
+            g2.setFont(g2.getFont().deriveFont(SUBTEXT_FONT_SIZE));
             String resumeText = "Press P to Resume";
             int resumeWidth = g2.getFontMetrics().stringWidth(resumeText);
             g2.drawString(resumeText, GamePanel.WIDTH / 2 - resumeWidth / 2, GamePanel.HEIGHT / 2 + 60);
@@ -183,12 +186,13 @@ final class GameRenderer {
         }
 
         int margin = 2;
-        Color c = gm.getCurrentMino().b[0].c;
+        Color c = gm.getCurrentMino().getColor();
         g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 70));
-        for (int i = 0; i < gm.getCurrentMino().b.length; i++) {
+        Block[] blocks = gm.getCurrentMino().getBlocks();
+        for (int i = 0; i < blocks.length; i++) {
             g2.fillRect(
-                    gm.getCurrentMino().b[i].x + margin,
-                    gm.getCurrentMino().b[i].y + dropDistance * Block.SIZE + margin,
+                    blocks[i].x + margin,
+                    blocks[i].y + dropDistance * Block.SIZE + margin,
                     Block.SIZE - 2 * margin,
                     Block.SIZE - 2 * margin);
         }
@@ -208,15 +212,16 @@ final class GameRenderer {
         Mino m = MinoFactory.createByType(gm, pieceType);
         m.setXY(0, 0);
 
-        int minBlockX = m.b[0].x;
-        int maxBlockX = m.b[0].x;
-        int minBlockY = m.b[0].y;
-        int maxBlockY = m.b[0].y;
-        for (int i = 1; i < m.b.length; i++) {
-            minBlockX = Math.min(minBlockX, m.b[i].x);
-            maxBlockX = Math.max(maxBlockX, m.b[i].x);
-            minBlockY = Math.min(minBlockY, m.b[i].y);
-            maxBlockY = Math.max(maxBlockY, m.b[i].y);
+        Block[] previewBlocks = m.getBlocks();
+        int minBlockX = previewBlocks[0].x;
+        int maxBlockX = previewBlocks[0].x;
+        int minBlockY = previewBlocks[0].y;
+        int maxBlockY = previewBlocks[0].y;
+        for (int i = 1; i < previewBlocks.length; i++) {
+            minBlockX = Math.min(minBlockX, previewBlocks[i].x);
+            maxBlockX = Math.max(maxBlockX, previewBlocks[i].x);
+            minBlockY = Math.min(minBlockY, previewBlocks[i].y);
+            maxBlockY = Math.max(maxBlockY, previewBlocks[i].y);
         }
 
         int cols = (maxBlockX - minBlockX) / Block.SIZE + 1;
@@ -246,10 +251,10 @@ final class GameRenderer {
         int drawY = boxTop + pad + (innerH - pieceH) / 2;
 
         int inset = 1;
-        for (int i = 0; i < m.b.length; i++) {
-            int ox = (m.b[i].x - minBlockX) / Block.SIZE;
-            int oy = (m.b[i].y - minBlockY) / Block.SIZE;
-            g2.setColor(m.b[i].c);
+        for (int i = 0; i < previewBlocks.length; i++) {
+            int ox = (previewBlocks[i].x - minBlockX) / Block.SIZE;
+            int oy = (previewBlocks[i].y - minBlockY) / Block.SIZE;
+            g2.setColor(previewBlocks[i].c);
             g2.fillRect(
                     drawX + ox * cell + inset,
                     drawY + oy * cell + inset,

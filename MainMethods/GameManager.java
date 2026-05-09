@@ -36,7 +36,11 @@ public class GameManager {
 
     private final java.util.Queue<Integer> previewQueue = new java.util.LinkedList<>();
 
-    private final ArrayList<Block> staticBlocks = new ArrayList<>();
+    private final java.util.concurrent.CopyOnWriteArrayList<Block> staticBlocks = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    private final KeyHandler keyHandler;
+    private final Sound music;
+    private final Sound effect;
 
     /**
      * The project assumes one live session: a single {@link GameManager} owned by
@@ -63,7 +67,10 @@ public class GameManager {
     private final ScoringStrategy scoringStrategy = new GuidelineScoring();
     private final GameRenderer gameRenderer = new GameRenderer();
 
-    public GameManager() {
+    public GameManager(KeyHandler keyHandler, Sound music, Sound effect) {
+        this.keyHandler = keyHandler;
+        this.music = music;
+        this.effect = effect;
         this.dropInterval = 60;
         staticBlocks.clear();
         MinoFactory.resetBag();
@@ -247,6 +254,18 @@ public class GameManager {
         return Collections.unmodifiableList(staticBlocks);
     }
 
+    public KeyHandler getKeyHandler() {
+        return keyHandler;
+    }
+
+    public Sound getMusic() {
+        return music;
+    }
+
+    public Sound getEffect() {
+        return effect;
+    }
+
     /**
      * Guideline-style soft/hard drop bonus (lines still use
      * {@link GuidelineScoring}).
@@ -309,12 +328,12 @@ public class GameManager {
             }
         }
 
-        if (KeyHandler.consumeHold()) {
+        if (keyHandler.consumeHold()) {
             holdMino();
-            KeyHandler.consumeHardDrop(); // discard hard drop if hold was just processed in the same frame
+            keyHandler.consumeHardDrop(); // discard hard drop if hold was just processed in the same frame
         }
 
-        if (KeyHandler.consumeHardDrop()) {
+        if (keyHandler.consumeHardDrop()) {
             hardDropCurrentMino();
         }
 
@@ -331,8 +350,8 @@ public class GameManager {
 
             if (isSpawnBlocked()) {
                 state = GameState.GAME_OVER;
-                GamePanel.getMusic().stop();
-                GamePanel.getEffect().playEffect(2);
+                music.stop();
+                effect.playEffect(2);
                 return;
             }
 
@@ -343,13 +362,28 @@ public class GameManager {
     }
 
     public void checkDelete() {
+        List<Integer> linesToClear = findFullRows();
+        if (!linesToClear.isEmpty()) {
+            removeRows(linesToClear);
+            shiftBlocksDown(linesToClear);
+            
+            int lineCount = linesToClear.size();
+            lines += lineCount;
+            if (!practiceMode) {
+                recalculateDropInterval();
+            }
+
+            effect.playEffect(1);
+            score += scoringStrategy.calculate(lineCount, level);
+        }
+    }
+
+    private List<Integer> findFullRows() {
         int y = top_y - BUFFER_ROWS * Block.SIZE;
-        int lineCount = 0;
-        ArrayList<Integer> linesToClear = new ArrayList<>();
+        List<Integer> linesToClear = new ArrayList<>();
 
         while (y < bottom_y) {
             int blockCount = 0;
-
             for (int i = 0; i < staticBlocks.size(); i++) {
                 if (staticBlocks.get(i).y == y) {
                     blockCount++;
@@ -358,43 +392,40 @@ public class GameManager {
 
             if (blockCount == 10) {
                 effectCounterOn = true;
-                effectY.add(y);
-                linesToClear.add(y);
-
-                for (int i = staticBlocks.size() - 1; i > -1; i--) {
-                    if (staticBlocks.get(i).y == y) {
-                        staticBlocks.remove(i);
-                    }
+                if (y >= top_y) {
+                    effectY.add(y);
                 }
-
-                lineCount++;
+                linesToClear.add(y);
             }
             y += Block.SIZE;
         }
+        return linesToClear;
+    }
 
-        if (lineCount > 0) {
-            lines += lineCount;
-            if (!practiceMode) {
-                recalculateDropInterval();
-            }
-
-            for (int i = 0; i < staticBlocks.size(); i++) {
-                int shift = 0;
-                for (int clearedY : linesToClear) {
-                    if (clearedY > staticBlocks.get(i).y) {
-                        shift++;
-                    }
+    private void removeRows(List<Integer> linesToClear) {
+        for (int y : linesToClear) {
+            for (int i = staticBlocks.size() - 1; i >= 0; i--) {
+                if (staticBlocks.get(i).y == y) {
+                    staticBlocks.remove(i);
                 }
-                staticBlocks.get(i).y += shift * Block.SIZE;
             }
+        }
+    }
 
-            GamePanel.getEffect().playEffect(1);
-            score += scoringStrategy.calculate(lineCount, level);
+    private void shiftBlocksDown(List<Integer> linesToClear) {
+        for (int i = 0; i < staticBlocks.size(); i++) {
+            int shift = 0;
+            for (int clearedY : linesToClear) {
+                if (clearedY > staticBlocks.get(i).y) {
+                    shift++;
+                }
+            }
+            staticBlocks.get(i).y += shift * Block.SIZE;
         }
     }
 
     private void recalculateDropInterval() {
-        level = lines / 5 + 1;
+        level = lines / 10 + 1;
         double secondsPerRow = Math.pow(Math.max(0.01, 0.8 - ((level - 1) * 0.007)), level - 1);
         dropInterval = Math.max(1, (int) (secondsPerRow * GamePanel.FPS));
     }
@@ -461,7 +492,7 @@ public class GameManager {
 
         currentMino.deactivating = false;
         currentMino.activeMino = false;
-        GamePanel.getEffect().playEffect(4);
+        effect.playEffect(4);
     }
 
     int calculateDropDistance(Mino mino) {

@@ -9,76 +9,76 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * so key events are not lost between threads.
  */
 public class KeyHandler implements KeyListener {
-    private static final AtomicBoolean leftPressed = new AtomicBoolean(false);
-    private static final AtomicBoolean rightPressed = new AtomicBoolean(false);
-    private static final AtomicBoolean downPressed = new AtomicBoolean(false);
-    private static final AtomicBoolean rotateClockwisePressed = new AtomicBoolean(false);
-    private static final AtomicBoolean rotateCounterClockwisePressed = new AtomicBoolean(false);
-    private static final AtomicBoolean rotateHalfTurnPressed = new AtomicBoolean(false);
-    private static final AtomicBoolean hardDropPressed = new AtomicBoolean(false);
-    private static final AtomicBoolean holdPressed = new AtomicBoolean(false);
-    private static final AtomicBoolean restartPressed = new AtomicBoolean(false);
-    private static final AtomicBoolean pausePressed = new AtomicBoolean(false);
-    private static final AtomicBoolean escPressed = new AtomicBoolean(false);
+    private final AtomicBoolean leftPressed = new AtomicBoolean(false);
+    private final AtomicBoolean rightPressed = new AtomicBoolean(false);
+    private final AtomicBoolean downPressed = new AtomicBoolean(false);
+    private final AtomicBoolean rotateClockwisePressed = new AtomicBoolean(false);
+    private final AtomicBoolean rotateCounterClockwisePressed = new AtomicBoolean(false);
+    private final AtomicBoolean rotateHalfTurnPressed = new AtomicBoolean(false);
+    private final AtomicBoolean hardDropPressed = new AtomicBoolean(false);
+    private final AtomicBoolean holdPressed = new AtomicBoolean(false);
+    private final AtomicBoolean restartPressed = new AtomicBoolean(false);
+    private final AtomicBoolean pausePressed = new AtomicBoolean(false);
+    private final AtomicBoolean escPressed = new AtomicBoolean(false);
 
-    public static boolean isLeftPressed() {
+    public boolean isLeftPressed() {
         return leftPressed.get();
     }
 
-    public static boolean isRightPressed() {
+    public boolean isRightPressed() {
         return rightPressed.get();
     }
 
-    public static boolean isDownPressed() {
+    public boolean isDownPressed() {
         return downPressed.get();
     }
 
-    public static boolean isEscPressed() {
+    public boolean isEscPressed() {
         return escPressed.get();
     }
 
-    public static boolean consumeLeft() {
+    public boolean consumeLeft() {
         return leftPressed.getAndSet(false);
     }
 
-    public static boolean consumeRight() {
+    public boolean consumeRight() {
         return rightPressed.getAndSet(false);
     }
 
-    public static boolean consumeDown() {
+    public boolean consumeDown() {
         return downPressed.getAndSet(false);
     }
 
-    public static boolean consumeRotateClockwise() {
+    public boolean consumeRotateClockwise() {
         return rotateClockwisePressed.getAndSet(false);
     }
 
-    public static boolean consumeRotateCounterClockwise() {
+    public boolean consumeRotateCounterClockwise() {
         return rotateCounterClockwisePressed.getAndSet(false);
     }
 
-    public static boolean consumeRotateHalfTurn() {
+    public boolean consumeRotateHalfTurn() {
         return rotateHalfTurnPressed.getAndSet(false);
     }
 
-    public static boolean consumeHardDrop() {
+    public boolean consumeHardDrop() {
         return hardDropPressed.getAndSet(false);
     }
 
-    public static boolean consumeHold() {
+    public boolean consumeHold() {
         return holdPressed.getAndSet(false);
     }
 
-    public static boolean consumeRestart() {
+    public boolean consumeRestart() {
         return restartPressed.getAndSet(false);
     }
 
-    public static boolean consumePause() {
+    public boolean consumePause() {
         return pausePressed.getAndSet(false);
     }
 
     /** Clears one-shot action flags (e.g. after restart). */
-    public static void resetTransientInput() {
+    public void resetTransientInput() {
         leftPressed.set(false);
         rightPressed.set(false);
         downPressed.set(false);

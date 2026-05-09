@@ -197,18 +197,16 @@ public class MenuPanel extends JPanel {
             gamePanel.launchGame();
         } else {
             gamePanel.gameManager.restartGame();
-            GamePanel.getMusic().playAndLoop(0);
+            gamePanel.getMusic().playAndLoop(0);
         }
     }
 
     private void openConfig() {
         final double MS_PER_FRAME = 1000.0 / 60.0; // ~16.667ms at 60 FPS
 
-        // Style the config panel to match the dark theme
-        UIManager.put("OptionPane.background", new Color(18, 18, 40));
-        UIManager.put("Panel.background", new Color(18, 18, 40));
-        UIManager.put("OptionPane.messageForeground", Color.WHITE);
-        UIManager.put("Label.foreground", Color.WHITE);
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Handling Config", true);
+        dialog.getContentPane().setBackground(new Color(18, 18, 40));
+        dialog.setLayout(new BorderLayout());
 
         JPanel configPanel = new JPanel(new GridBagLayout());
         configPanel.setBackground(new Color(18, 18, 40));
@@ -288,33 +286,41 @@ public class MenuPanel extends JPanel {
         gbc.gridx = 1;
         configPanel.add(sdfInput, gbc);
 
-        int result = JOptionPane.showConfirmDialog(this, configPanel,
-                "Handling Config", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(new Color(18, 18, 40));
+        JButton saveBtn = new JButton("Save");
+        JButton cancelBtn = new JButton("Cancel");
+        buttonPanel.add(saveBtn);
+        buttonPanel.add(cancelBtn);
 
-        if (result == JOptionPane.OK_OPTION) {
+        cancelBtn.addActionListener(e -> dialog.dispose());
+        saveBtn.addActionListener(e -> {
             try {
                 int dasVal = Integer.parseInt(dasInput.getText().trim());
                 int arrVal = Integer.parseInt(arrInput.getText().trim());
                 int sdf = Integer.parseInt(sdfInput.getText().trim());
 
                 if (advancedToggle.isSelected()) {
-                    // Values are already in frames
                     Mino.DAS_DELAY = Math.max(0, dasVal);
                     Mino.ARR_DELAY = Math.max(0, arrVal);
                 } else {
-                    // Convert ms → frames (60 FPS)
                     Mino.DAS_DELAY = Math.max(0, (int) Math.round(dasVal / MS_PER_FRAME));
                     Mino.ARR_DELAY = Math.max(0, (int) Math.round(arrVal / MS_PER_FRAME));
                 }
                 Mino.SDF_MULTIPLIER = Math.max(1, sdf);
 
-                JOptionPane.showMessageDialog(this, "Configuration saved!",
-                        "Saved", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Configuration saved!", "Saved", JOptionPane.INFORMATION_MESSAGE);
+                dialog.dispose();
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Invalid number format!",
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Invalid number format!", "Error", JOptionPane.ERROR_MESSAGE);
             }
-        }
+        });
+
+        dialog.add(configPanel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
 
     private JLabel styledLabel(String text) {

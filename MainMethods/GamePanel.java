@@ -12,16 +12,17 @@ public class GamePanel extends JPanel implements Runnable {
     public static final int WIDTH = 1280;
     public static final int HEIGHT = 720;
     public static final int FPS = 60;
-    Thread gameThread;
+    private volatile Thread gameThread;
     GameManager gameManager;
-    private static final Sound music = new Sound();
-    private static final Sound effect = new Sound();
+    private final Sound music = new Sound();
+    private final Sound effect = new Sound();
+    private final KeyHandler keyHandler = new KeyHandler();
 
-    public static Sound getMusic() {
+    public Sound getMusic() {
         return music;
     }
 
-    public static Sound getEffect() {
+    public Sound getEffect() {
         return effect;
     }
 
@@ -35,10 +36,10 @@ public class GamePanel extends JPanel implements Runnable {
         this.setBackground(Color.black);
         this.setLayout(null);
 
-        this.addKeyListener(new KeyHandler());
+        this.addKeyListener(keyHandler);
         this.setFocusable(true);
 
-        gameManager = new GameManager();
+        gameManager = new GameManager(keyHandler, music, effect);
     }
 
     public void setNavigation(CardLayout cardLayout, JPanel mainContainer) {
@@ -77,7 +78,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void update() {
         // ESC hold to return to menu
-        if (KeyHandler.isEscPressed()) {
+        if (keyHandler.isEscPressed()) {
             escHoldCounter++;
             if (escHoldCounter >= ESC_HOLD_FRAMES) {
                 returnToMenu();
@@ -87,14 +88,14 @@ public class GamePanel extends JPanel implements Runnable {
             escHoldCounter = 0;
         }
 
-        if (KeyHandler.consumePause()) {
+        if (keyHandler.consumePause()) {
             togglePause();
         }
 
-        if (KeyHandler.consumeRestart()) {
+        if (keyHandler.consumeRestart()) {
             if (gameManager.getState() == GameState.GAME_OVER) {
                 restartGame();
-                KeyHandler.resetTransientInput();
+                keyHandler.resetTransientInput();
             }
             // else: ignore R while playing — intentionally consumed
         }
@@ -106,9 +107,19 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void returnToMenu() {
         music.stop();
-        KeyHandler.resetTransientInput();
+        keyHandler.resetTransientInput();
         escHoldCounter = 0;
+        
+        Thread temp = gameThread;
         gameThread = null; // Stop the game loop thread
+        if (temp != null) {
+            try {
+                temp.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        
         if (cardLayout != null && mainContainer != null) {
             cardLayout.show(mainContainer, "MENU");
         }

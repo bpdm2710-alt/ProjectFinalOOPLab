@@ -3,8 +3,6 @@ package mino;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import MainMethods.GameManager;
-import MainMethods.GamePanel;
-import MainMethods.KeyHandler;
 
 public class Mino {
     /** Lock delay at 60 FPS ≈ 0.75 s (Tetris Guideline-style). */
@@ -23,6 +21,14 @@ public class Mino {
 
     public Mino(GameManager gm) {
         this.gm = gm;
+    }
+
+    public Color getColor() {
+        return b[0].c;
+    }
+
+    public Block[] getBlocks() {
+        return b;
     }
 
     public Block b[] = new Block[4];
@@ -158,7 +164,7 @@ public class Mino {
 
         boolean manipulated = false;
 
-        if (KeyHandler.isLeftPressed()) {
+        if (gm.getKeyHandler().isLeftPressed()) {
             if (dasLeftCounter == 0 || (dasLeftCounter >= DAS_DELAY
                     && (ARR_DELAY == 0 || (dasLeftCounter - DAS_DELAY) % ARR_DELAY == 0))) {
                 if (ARR_DELAY == 0 && dasLeftCounter >= DAS_DELAY) {
@@ -184,7 +190,7 @@ public class Mino {
             dasLeftCounter = 0;
         }
 
-        if (KeyHandler.isRightPressed()) {
+        if (gm.getKeyHandler().isRightPressed()) {
             if (dasRightCounter == 0 || (dasRightCounter >= DAS_DELAY
                     && (ARR_DELAY == 0 || (dasRightCounter - DAS_DELAY) % ARR_DELAY == 0))) {
                 if (ARR_DELAY == 0 && dasRightCounter >= DAS_DELAY) {
@@ -210,7 +216,7 @@ public class Mino {
             dasRightCounter = 0;
         }
 
-        if (KeyHandler.isDownPressed()) {
+        if (gm.getKeyHandler().isDownPressed()) {
             int dropDistance = 0;
             while (!downCollision && dropDistance < SDF_MULTIPLIER) {
                 b[0].y += Block.SIZE;
@@ -229,21 +235,21 @@ public class Mino {
         }
 
         boolean rotated = false;
-        if (KeyHandler.consumeRotateClockwise()) {
+        if (gm.getKeyHandler().consumeRotateClockwise()) {
             if (rotateClockwise()) {
-                GamePanel.getEffect().playEffect(3);
+                gm.getEffect().playEffect(3);
                 rotated = true;
             }
         }
-        if (KeyHandler.consumeRotateCounterClockwise()) {
+        if (gm.getKeyHandler().consumeRotateCounterClockwise()) {
             if (rotateCounterClockwise()) {
-                GamePanel.getEffect().playEffect(3);
+                gm.getEffect().playEffect(3);
                 rotated = true;
             }
         }
-        if (KeyHandler.consumeRotateHalfTurn()) {
+        if (gm.getKeyHandler().consumeRotateHalfTurn()) {
             if (rotateHalfTurn()) {
-                GamePanel.getEffect().playEffect(3);
+                gm.getEffect().playEffect(3);
                 rotated = true;
             }
         }
@@ -262,7 +268,7 @@ public class Mino {
 
         if (downCollision) {
             if (deactivating == false && !wasDownCollision) {
-                GamePanel.getEffect().playEffect(4);
+                gm.getEffect().playEffect(4);
             }
             deactivating = true;
             wasDownCollision = true;

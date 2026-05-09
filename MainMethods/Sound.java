@@ -63,9 +63,9 @@ public class Sound {
                 musicClip = clip; // Save music clip for pause/resume
             }
             
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(soundFile);
-            clip.open(audioInputStream);
-            audioInputStream.close();
+            try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(soundFile)) {
+                clip.open(audioInputStream);
+            }
 
             if (loop) {
                 clip.loop(Clip.LOOP_CONTINUOUSLY);
@@ -74,11 +74,13 @@ public class Sound {
                     @Override
                     public void update(LineEvent event) {
                         if (event.getType() == Type.STOP) {
-                            try {
-                                clip.close();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            javax.swing.SwingUtilities.invokeLater(() -> {
+                                try {
+                                    clip.close();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            });
                         }
                     }
                 });
