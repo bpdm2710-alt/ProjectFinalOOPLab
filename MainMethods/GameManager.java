@@ -4,10 +4,15 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Random;
 
 /** Stores the board, the falling piece, scoring, and rendering. */
 public class GameManager {
+    private static final Path HIGH_SCORE_FILE = Path.of("highscore.txt");
     private static final int COLS = 10;
     private static final int ROWS = 20;
     private static final int CELL = 30;
@@ -30,6 +35,7 @@ public class GameManager {
     private int pieceX;
     private int pieceY;
     private int score;
+    private int highScore;
     private int level;
     private int lines;
     private boolean practiceMode;
@@ -53,6 +59,7 @@ public class GameManager {
         gameOver = false;
         fallAccumulator = 0;
         lastUpdateTime = System.currentTimeMillis();
+        highScore = loadHighScore();
         for (int col = 0; col < COLS; col++) {
             for (int row = 0; row < ROWS; row++) {
                 board[col][row] = 0;
@@ -151,6 +158,7 @@ public class GameManager {
         clearLines();
         if (!spawnNextPiece()) {
             gameOver = true;
+            saveHighScore();
             sound.playGameOver();
         }
     }
@@ -228,6 +236,11 @@ public class GameManager {
     /** Returns the current score. */
     public int getScore() {
         return score;
+    }
+
+    /** Returns the saved high score. */
+    public int getHighScore() {
+        return highScore;
     }
 
     /** Returns the current level. */
@@ -322,16 +335,18 @@ public class GameManager {
         g.setFont(new Font("SansSerif", Font.BOLD, 18));
         g.drawString("Score", HUD_X, 120);
         g.drawString(String.valueOf(score), HUD_X, 145);
-        g.drawString("Level", HUD_X, 195);
-        g.drawString(String.valueOf(level), HUD_X, 220);
-        g.drawString("Lines", HUD_X, 270);
-        g.drawString(String.valueOf(lines), HUD_X, 295);
-        g.drawString(practiceMode ? "Practice" : "Marathon", HUD_X, 345);
+        g.drawString("Best", HUD_X, 170);
+        g.drawString(String.valueOf(highScore), HUD_X, 195);
+        g.drawString("Level", HUD_X, 245);
+        g.drawString(String.valueOf(level), HUD_X, 270);
+        g.drawString("Lines", HUD_X, 320);
+        g.drawString(String.valueOf(lines), HUD_X, 345);
+        g.drawString(practiceMode ? "Practice" : "Marathon", HUD_X, 395);
 
-        g.drawString("Next", HUD_X, 405);
+        g.drawString("Next", HUD_X, 455);
         int[][] cells = nextPiece.getCells(0);
         int previewX = HUD_X;
-        int previewY = 430;
+        int previewY = 480;
         for (int row = 0; row < 4; row++) {
             for (int col = 0; col < 4; col++) {
                 if (cells[row][col] == 1) {
@@ -354,5 +369,34 @@ public class GameManager {
         g.setFont(new Font("SansSerif", Font.PLAIN, 20));
         String hint = "Press R to restart";
         g.drawString(hint, (GamePanel.WIDTH - g.getFontMetrics().stringWidth(hint)) / 2, GamePanel.HEIGHT / 2 + 24);
+        g.setFont(new Font("SansSerif", Font.PLAIN, 18));
+        String best = "Best: " + highScore;
+        g.drawString(best, (GamePanel.WIDTH - g.getFontMetrics().stringWidth(best)) / 2, GamePanel.HEIGHT / 2 + 52);
+    }
+
+    /** Loads the high score from disk, or returns zero if the file is missing. */
+    private int loadHighScore() {
+        try {
+            if (!Files.exists(HIGH_SCORE_FILE)) {
+                return 0;
+            }
+            String text = Files.readString(HIGH_SCORE_FILE, StandardCharsets.UTF_8).trim();
+            return text.isEmpty() ? 0 : Integer.parseInt(text);
+        } catch (IOException | NumberFormatException exception) {
+            return 0;
+        }
+    }
+
+    /** Saves the current score if it beats the stored high score. */
+    private void saveHighScore() {
+        if (score <= highScore) {
+            return;
+        }
+        highScore = score;
+        try {
+            Files.writeString(HIGH_SCORE_FILE, String.valueOf(highScore), StandardCharsets.UTF_8);
+        } catch (IOException exception) {
+            System.err.println("Could not save high score: " + exception.getMessage());
+        }
     }
 }
