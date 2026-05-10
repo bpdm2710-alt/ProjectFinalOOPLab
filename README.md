@@ -48,6 +48,7 @@ Each pattern is implemented to demonstrate separation of concerns and to support
 
 ## 📁 Project Structure
 
+```
 classic/
 ├── Main.java              — Entry point, JFrame + CardLayout setup
 ├── MenuPanel.java         — Main menu UI (Marathon, Practice, Quit)
@@ -60,6 +61,7 @@ classic/
 ├── ScoreListener.java     — Observer pattern interface
 ├── ScoringStrategy.java   — Strategy pattern interface for scoring
 └── GuidelineScoring.java  — Tetris Guideline scoring implementation
+```
 
 ## 🔢 Scoring System
 
@@ -89,7 +91,7 @@ Working directory must be the project root (where `Sound/` is located).
 |:--|:--|
 | Language | Java 21 (code compatible with Java 17+) |
 | Libraries | None (pure Swing/AWT) |
-| OS | Windows / macOS / Linux (JRE required)
+| OS | Windows / macOS / Linux (JRE required) |
 
 ## 🧾 Academic Context & Grading
 
@@ -111,4 +113,3 @@ Highlight the implemented patterns and features in your report and demo.
 
 ---
 
-If you want, I can also add a short changelog, screenshots for the README, or sample test harnesses for automated grading.
