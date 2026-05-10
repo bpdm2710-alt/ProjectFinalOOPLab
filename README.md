@@ -1,73 +1,61 @@
-# Classic Tetris Java
+# Classic Tetris
 
-A clean, single-package Classic Tetris implementation built with Java Swing for academic presentation and simple gameplay demos.
+A compact Classic Tetris implementation written in Java Swing. Designed for teaching, demonstration, and lightweight play.
 
-## Features
+What's changed (recent updates)
+- NES-style gravity: gravity uses a frames-per-cell lookup table to reproduce original timing.
+- Fixed ARE (entry delay): 10 frames after a piece locks (or after line-clear flash) before the next piece spawns.
+- NES-style soft drop: fixed 2 frames per cell (~33 ms) while holding `↓`.
+- Soft-drop transition safety: when soft-drop begins, the fall accumulator is reset to avoid large instant drops.
+- Counterclockwise rotation: `Z` rotates pieces CCW.
+- CTWC-style white flash on line clear (about 10 frames).
+- High score is persisted to `highscore.txt` when a new best is reached.
+- Background music replaced with a local Tetris theme in the `Sound/` folder.
 
-- 7 tetrominoes with 4 rotation states each
-- 10×20 board with gravity, collision, hard drop, and soft drop
-- Ghost piece and grid rendering
-- CTWC-style line clear flash effect
-- Pause and resume with `P`
-- Marathon and Practice modes
-- High score saved to `highscore.txt`
-- Background music and sound effects from the local `Sound/` folder, including the original Tetris theme
+Features
+- All 7 tetrominoes with 4 rotation states
+- 10×20 playfield, collision, hard drop, soft drop, and ghost piece
+- Grid lines and CTWC-style line-clear flash
+- Pause (`P`), restart (`R`), and menu (`ESC`) controls
+- High-score persistence
 
-## Controls
+Controls
+- Left / Right: move piece
+- Down: soft drop (fixed 2 frames ≈ 33 ms per cell)
+- Up or X: rotate clockwise
+- Z: rotate counterclockwise
+- Space: hard drop
+- P: pause / resume
+- R: restart (on Game Over)
+- ESC: return to main menu
 
-| Key | Action |
-|-----|--------|
-| `←` / `→` | Move left / right |
-| `↓` | Soft drop |
-| `↑` or `X` | Rotate clockwise |
-| `Space` | Hard drop |
-| `P` | Pause / resume |
-| `R` | Restart on the Game Over screen |
-| `ESC` | Return to the main menu |
+Design notes
+- `TetrominoFactory`: Factory pattern for piece creation
+- `ScoreListener`: Observer pattern for HUD updates
+- `ScoringStrategy` / `GuidelineScoring`: Strategy pattern for scoring rules
 
-## Game Modes
-
-### Marathon
-Standard endless play. Gravity increases as the score grows through line clears.
-
-### Practice
-Gravity stays at the starting speed, so you can train stacking and rotation without pressure.
-
-## Project Structure
-
-```text
+Project layout
+```
 Classic/
-├── classic/
-│   ├── Main.java
-│   ├── MenuPanel.java
-│   ├── GamePanel.java
-│   ├── GameManager.java
-│   ├── KeyHandler.java
-│   ├── Sound.java
-│   ├── Tetromino.java
-│   ├── TetrominoFactory.java
-│   ├── ScoringStrategy.java
-│   ├── GuidelineScoring.java
-│   └── ScoreListener.java
-└── Sound/
-    ├── Original Tetris theme (Tetris Soundtrack) - Marcel S.wav
-    ├── delete line.wav
-    └── gameover.wav
+├── classic/    # Java sources (package `classic`)
+└── Sound/      # .wav assets used for BGM and SFX
 ```
 
-## Build and Run
+Requirements
+- Java 11 or newer (Java 17+ recommended)
 
-Run from the project root so the game can find the `Sound/` assets.
+Build & Run
+Run from the `Classic` directory so the `Sound/` assets are available:
 
 ```bash
 javac classic/*.java
 java classic.Main
 ```
 
-If you are using VS Code, open the `Classic` folder directly and run `classic.Main` from the Java extension.
+Or run `classic.Main` from your IDE (for example, the Java extension in VS Code).
 
-## Notes
+Notes
+- `highscore.txt` is created/updated automatically when you beat the current best score. Delete it to reset the saved high score.
+- Timing and feel parameters (NES gravity table, `ARE_FRAMES`) are defined in `classic/GameManager.java` if you want to tweak them.
 
-- `highscore.txt` is generated automatically when the best score changes.
-- Delete `highscore.txt` if you want to reset the saved best score.
-- Java 17 or later is recommended.
+If you'd like, I can add screenshots, a short changelog, or platform-specific run instructions for Windows.
