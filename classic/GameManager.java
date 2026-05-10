@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -45,6 +46,9 @@ public class GameManager {
     private boolean gameOver;
     private long fallAccumulator;
     private long lastUpdateTime;
+    private static final int FLASH_DURATION = 10;
+    private final List<Integer> flashingRows = new ArrayList<>();
+    private int flashCounter = 0;
 
     /** Creates the manager and prepares the first game. */
     public GameManager(KeyHandler keyHandler, Sound sound) {
@@ -61,6 +65,8 @@ public class GameManager {
         lines = 0;
         gameOver = false;
         fallAccumulator = 0;
+        flashingRows.clear();
+        flashCounter = 0;
         lastUpdateTime = System.currentTimeMillis();
         highScore = loadHighScore();
         for (int col = 0; col < COLS; col++) {
@@ -87,6 +93,23 @@ public class GameManager {
     public void update() {
         if (gameOver) {
             return;
+        }
+
+        // Handle line clear flash animation
+        if (!flashingRows.isEmpty()) {
+            flashCounter++;
+            if (flashCounter >= FLASH_DURATION) {
+                performLineClear();
+                flashingRows.clear();
+                flashCounter = 0;
+                // After flash completes, spawn next piece
+                if (!spawnNextPiece()) {
+                    gameOver = true;
+                    saveHighScore();
+                    sound.playGameOver();
+                }
+            }
+            return;  // Don't process gravity/input while flashing
         }
 
         long now = System.currentTimeMillis();
@@ -168,16 +191,19 @@ public class GameManager {
         }
 
         clearLines();
-        if (!spawnNextPiece()) {
-            gameOver = true;
-            saveHighScore();
-            sound.playGameOver();
+        if (flashingRows.isEmpty()) {
+            // No lines to clear, spawn immediately
+            if (!spawnNextPiece()) {
+                gameOver = true;
+                saveHighScore();
+                sound.playGameOver();
+            }
         }
+        // If flash is active, spawn will happen after flash completes in update()
     }
 
     /** Clears full rows from bottom to top and updates score. */
     private void clearLines() {
-        int cleared = 0;
         for (int row = ROWS - 1; row >= 0; row--) {
             boolean full = true;
             for (int col = 0; col < COLS; col++) {
@@ -187,8 +213,24 @@ public class GameManager {
                 }
             }
             if (full) {
-                cleared++;
-                for (int pull = row; pull > 0; pull--) {
+                flashingRows.add(row);
+            }
+        }
+        if (!flashingRows.isEmpty()) {
+            flashCounter = 0;
+        }
+    }
+
+    /** Actually clears the flashing rows and updates score. */
+    private void performLineClear() {
+        int cleared = flashingRows.size();
+        if (cleared > 0) {
+            List<Integer> sorted = new ArrayList<>(flashingRows);
+            Collections.sort(sorted);  // Process low rows first to avoid index corruption
+            int offset = 0;
+            for (int row : sorted) {
+                int target = row + offset;  // Actual row after previous shifts
+                for (int pull = target; pull > 0; pull--) {
                     for (int col = 0; col < COLS; col++) {
                         board[col][pull] = board[col][pull - 1];
                     }
@@ -196,11 +238,8 @@ public class GameManager {
                 for (int col = 0; col < COLS; col++) {
                     board[col][0] = 0;
                 }
-                row++;
+                offset++;  // Each deletion shifts remaining rows down by 1
             }
-        }
-
-        if (cleared > 0) {
             lines += cleared;
             score += scoringStrategy.calculate(cleared, level);
             level = 1 + lines / 10;
@@ -310,9 +349,21 @@ public class GameManager {
             for (int col = 0; col < COLS; col++) {
                 int value = board[col][row];
                 if (value != 0) {
-                    drawCell(g, BOARD_X + col * CELL, BOARD_Y + row * CELL, colors[value - 1], 255);
+                    Color cellColor = colors[value - 1];
+                    if (flashingRows.contains(row)) {
+                        cellColor = Color.WHITE;
+                    }
+                    drawCell(g, BOARD_X + col * CELL, BOARD_Y + row * CELL, cellColor, 255);
                 }
             }
+        }
+        
+        g.setColor(new Color(100, 110, 130, 80));
+        for (int i = 1; i < ROWS; i++) {
+            g.drawLine(BOARD_X, BOARD_Y + i * CELL, BOARD_X + COLS * CELL, BOARD_Y + i * CELL);
+        }
+        for (int i = 1; i < COLS; i++) {
+            g.drawLine(BOARD_X + i * CELL, BOARD_Y, BOARD_X + i * CELL, BOARD_Y + ROWS * CELL);
         }
     }
 
