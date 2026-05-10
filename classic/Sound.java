@@ -13,7 +13,7 @@ public class Sound {
     /** Loads the audio files from the local Sound folder. */
     public Sound() {
         String soundDir = "Sound/";
-        soundFiles[0] = new File(soundDir + "Tetris 99 - Main Theme - SoundHub.wav");
+        soundFiles[0] = new File(soundDir + "Original Tetris theme (Tetris Soundtrack) - Marcel S.wav");
         soundFiles[1] = new File(soundDir + "delete line.wav");
         soundFiles[2] = new File(soundDir + "gameover.wav");
     }

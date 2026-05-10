@@ -11,7 +11,7 @@ A clean, single-package Classic Tetris implementation built with Java Swing for 
 - Pause and resume with `P`
 - Marathon and Practice modes
 - High score saved to `highscore.txt`
-- Background music and sound effects from the local `Sound/` folder
+- Background music and sound effects from the local `Sound/` folder, including the original Tetris theme
 
 ## Controls
 
@@ -50,7 +50,7 @@ Classic/
 │   ├── GuidelineScoring.java
 │   └── ScoreListener.java
 └── Sound/
-    ├── Tetris 99 - Main Theme - SoundHub.wav
+    ├── Original Tetris theme (Tetris Soundtrack) - Marcel S.wav
     ├── delete line.wav
     └── gameover.wav
 ```
