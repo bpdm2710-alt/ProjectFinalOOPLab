@@ -1,61 +1,114 @@
-# Classic Tetris
+# ✨ Classic Tetris — Classic (OOP Lab Final)
 
-A compact Classic Tetris implementation written in Java Swing. Designed for teaching, demonstration, and lightweight play.
+A compact, educational Classic Tetris implementation written in Java (Swing/AWT). Built as a university OOP final project focused on clear design, documented patterns, and faithful NES-like timing.
 
-What's changed (recent updates)
-- NES-style gravity: gravity uses a frames-per-cell lookup table to reproduce original timing.
-- Fixed ARE (entry delay): 10 frames after a piece locks (or after line-clear flash) before the next piece spawns.
-- NES-style soft drop: fixed 2 frames per cell (~33 ms) while holding `↓`.
-- Soft-drop transition safety: when soft-drop begins, the fall accumulator is reset to avoid large instant drops.
-- Counterclockwise rotation: `Z` rotates pieces CCW.
-- CTWC-style white flash on line clear (about 10 frames).
-- High score is persisted to `highscore.txt` when a new best is reached.
-- Background music replaced with a local Tetris theme in the `Sound/` folder.
+## 🎮 Features
 
-Features
-- All 7 tetrominoes with 4 rotation states
-- 10×20 playfield, collision, hard drop, soft drop, and ghost piece
-- Grid lines and CTWC-style line-clear flash
-- Pause (`P`), restart (`R`), and menu (`ESC`) controls
-- High-score persistence
+### Core Gameplay
+- 7 tetrominoes with 4 rotation states
+- 10×20 playfield with collision detection and locking
+- Hard drop and soft drop
+- Ghost piece preview showing landing position
+- Grid overlay on the playfield
 
-Controls
-- Left / Right: move piece
-- Down: soft drop (fixed 2 frames ≈ 33 ms per cell)
-- Up or X: rotate clockwise
-- Z: rotate counterclockwise
-- Space: hard drop
-- P: pause / resume
-- R: restart (on Game Over)
-- ESC: return to main menu
+### Extra Features
+- Menu screen with Marathon and Practice modes (CardLayout navigation)
+- Practice mode: gravity locked at level 1 speed
+- NES-accurate gravity table (frames per grid cell)
+- ARE (Entry Delay): 10-frame spawn delay after lock / after clear flash
+- NES-style line clear animation: rows flash white for 10 frames
+- NES-style soft drop: fixed 2 frames per cell (~33 ms)
+- High score persistence via `highscore.txt` I/O
+- Pause / resume with an overlay (`P`)
+- Counterclockwise rotation bound to `Z`
+- Background music & sound effects (WAV playback via `javax.sound.sampled`)
 
-Design notes
-- `TetrominoFactory`: Factory pattern for piece creation
-- `ScoreListener`: Observer pattern for HUD updates
-- `ScoringStrategy` / `GuidelineScoring`: Strategy pattern for scoring rules
+## 🏗️ Design Patterns
 
-Project layout
-```
-Classic/
-├── classic/    # Java sources (package `classic`)
-└── Sound/      # .wav assets used for BGM and SFX
-```
+- **Strategy** — `ScoringStrategy` interface with `GuidelineScoring` implementation. This decouples scoring rules from game flow and allows swapping scoring policies for testing or extensions.
 
-Requirements
-- Java 11 or newer (Java 17+ recommended)
+- **Factory** — `TetrominoFactory.createRandom()` centralizes tetromino creation and seeding. The factory isolates piece-generation details and simplifies testing and future piece selection policies.
 
-Build & Run
-Run from the `Classic` directory so the `Sound/` assets are available:
+- **Observer** — `ScoreListener` interface; `GamePanel` implements it and `GameManager` notifies listeners on score/level/lines changes. This keeps HUD updates separated from game logic and enables multiple listeners.
+
+Each pattern is implemented to demonstrate separation of concerns and to support clear, testable code for academic evaluation.
+
+## ⌨️ Controls
+
+| Key | Action |
+|---:|:---|
+| ← / → | Move left / right |
+| ↓ | Soft drop (2 frames per cell ≈ 33 ms) |
+| ↑ or X | Rotate clockwise |
+| Z | Rotate counter-clockwise |
+| Space | Hard drop |
+| P | Pause / Resume |
+| R | Restart (on Game Over) |
+| ESC | Return to menu |
+
+## 📁 Project Structure
+
+classic/
+├── Main.java              — Entry point, JFrame + CardLayout setup
+├── MenuPanel.java         — Main menu UI (Marathon, Practice, Quit)
+├── GamePanel.java         — 60 FPS game loop (Runnable), implements `ScoreListener`
+├── GameManager.java       — Board logic, gravity, collision, line clear, timing, rendering helpers
+├── Tetromino.java         — 7 piece shapes as `int[][][][]` with 4 rotations each
+├── TetrominoFactory.java  — Factory pattern: random piece creation
+├── KeyHandler.java        — Thread-safe `AtomicBoolean` input flags
+├── Sound.java             — WAV playback via `javax.sound.sampled` (try-with-resources for SFX/BGM)
+├── ScoreListener.java     — Observer pattern interface
+├── ScoringStrategy.java   — Strategy pattern interface for scoring
+└── GuidelineScoring.java  — Tetris Guideline scoring implementation
+
+## 🔢 Scoring System
+
+| Lines Cleared | Base Points | Notes |
+|---:|---:|:---|
+| Single (1) | 100 | × level |
+| Double (2) | 300 | × level |
+| Triple (3) | 500 | × level |
+| Tetris (4) | 800 | × level |
+
+Final points = Base Points × Current Level (level increases per 10 lines cleared).
+
+## 🛠️ How to Build & Run
+
+Run from the project root so the `Sound/` folder is available to the runtime.
 
 ```bash
-javac classic/*.java
-java classic.Main
+javac -d bin classic/*.java
+java -cp bin classic.Main
 ```
 
-Or run `classic.Main` from your IDE (for example, the Java extension in VS Code).
+Working directory must be the project root (where `Sound/` is located).
 
-Notes
-- `highscore.txt` is created/updated automatically when you beat the current best score. Delete it to reset the saved high score.
-- Timing and feel parameters (NES gravity table, `ARE_FRAMES`) are defined in `classic/GameManager.java` if you want to tweak them.
+## ✅ Requirements
 
-If you'd like, I can add screenshots, a short changelog, or platform-specific run instructions for Windows.
+| Item | Requirement |
+|:--|:--|
+| Language | Java 21 (code compatible with Java 17+) |
+| Libraries | None (pure Swing/AWT) |
+| OS | Windows / macOS / Linux (JRE required)
+
+## 🧾 Academic Context & Grading
+
+This repository is prepared for a university OOP final project. Grading rubric example:
+
+- Game implementation: 50 pts
+- Report & class diagrams: 10 pts
+- Demonstration: 10 pts
+- Git usage: 10 pts
+- GUI & polish: 10 pts
+- Bonus: +5 pts per design pattern implemented, +2 pts per extra feature
+
+Highlight the implemented patterns and features in your report and demo.
+
+## 🎖️ Credits
+
+- Inspired by NES Tetris and CTWC (CTWC-style line-clear flash and timing feel)
+- Project code written for educational purposes; all assets included under `Sound/` are local WAV files.
+
+---
+
+If you want, I can also add a short changelog, screenshots for the README, or sample test harnesses for automated grading.
