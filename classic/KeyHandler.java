@@ -10,6 +10,7 @@ public class KeyHandler implements KeyListener {
     private final AtomicBoolean rightPressed = new AtomicBoolean(false);
     private final AtomicBoolean downPressed = new AtomicBoolean(false);
     private final AtomicBoolean rotatePressed = new AtomicBoolean(false);
+    private final AtomicBoolean rotateCCWPressed = new AtomicBoolean(false);
     private final AtomicBoolean hardDropPressed = new AtomicBoolean(false);
     private final AtomicBoolean restartPressed = new AtomicBoolean(false);
     private final AtomicBoolean menuPressed = new AtomicBoolean(false);
@@ -33,6 +34,11 @@ public class KeyHandler implements KeyListener {
     /** Consumes a rotate request. */
     public boolean consumeRotate() {
         return rotatePressed.getAndSet(false);
+    }
+
+    /** Consumes a counterclockwise rotate request. */
+    public boolean consumeRotateCCW() {
+        return rotateCCWPressed.getAndSet(false);
     }
 
     /** Consumes a hard-drop request. */
@@ -61,6 +67,7 @@ public class KeyHandler implements KeyListener {
         rightPressed.set(false);
         downPressed.set(false);
         rotatePressed.set(false);
+        rotateCCWPressed.set(false);
         hardDropPressed.set(false);
         restartPressed.set(false);
         menuPressed.set(false);
@@ -84,6 +91,8 @@ public class KeyHandler implements KeyListener {
             downPressed.set(true);
         } else if (code == KeyEvent.VK_UP || code == KeyEvent.VK_X) {
             rotatePressed.set(true);
+        } else if (code == KeyEvent.VK_Z) {
+            rotateCCWPressed.set(true);
         } else if (code == KeyEvent.VK_SPACE) {
             hardDropPressed.set(true);
         } else if (code == KeyEvent.VK_R) {
@@ -105,6 +114,8 @@ public class KeyHandler implements KeyListener {
             rightPressed.set(false);
         } else if (code == KeyEvent.VK_DOWN) {
             downPressed.set(false);
+        } else if (code == KeyEvent.VK_Z) {
+            rotateCCWPressed.set(false);
         } else if (code == KeyEvent.VK_ESCAPE) {
             menuPressed.set(false);
         } else if (code == KeyEvent.VK_P) {

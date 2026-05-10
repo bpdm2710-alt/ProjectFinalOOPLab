@@ -24,7 +24,7 @@ public class GameManager {
     private static final int BOARD_Y = 60;
     private static final int HUD_X = 380;
     private static final long BASE_INTERVAL = 500L;
-    private static final long SOFT_DROP_INTERVAL = 50L;
+    
 
     private final int[][] board = new int[COLS][ROWS];
     private final KeyHandler keyHandler;
@@ -47,9 +47,12 @@ public class GameManager {
     private boolean gameOver;
     private long fallAccumulator;
     private long lastUpdateTime;
+    private boolean wasDownPressed = false;
     private static final int FLASH_DURATION = 10;
     private final List<Integer> flashingRows = new ArrayList<>();
     private int flashCounter = 0;
+    private static final int ARE_FRAMES = 10;
+    private int areCounter = 0;
 
     /** Creates the manager and prepares the first game. */
     public GameManager(KeyHandler keyHandler, Sound sound) {
@@ -69,6 +72,7 @@ public class GameManager {
         flashingRows.clear();
         flashCounter = 0;
         lastUpdateTime = System.currentTimeMillis();
+        wasDownPressed = false;
         highScore = loadHighScore();
         for (int col = 0; col < COLS; col++) {
             for (int row = 0; row < ROWS; row++) {
@@ -94,6 +98,7 @@ public class GameManager {
     public void refreshTiming() {
         fallAccumulator = 0;
         lastUpdateTime = System.currentTimeMillis();
+        wasDownPressed = false;
     }
 
     /** Updates input, gravity, and piece locking. */
@@ -111,26 +116,45 @@ public class GameManager {
                 flashCounter = 0;
                 lastUpdateTime = System.currentTimeMillis();
                 fallAccumulator = 0;
-                // After flash completes, spawn next piece
+                // Start ARE (entry delay) before spawning next piece
+                areCounter = ARE_FRAMES;
+            }
+            return;  // Don't process gravity/input while flashing
+        }
+        
+        // Handle ARE (entry delay) countdown
+        if (areCounter > 0) {
+            areCounter--;
+            if (areCounter == 0) {
                 if (!spawnNextPiece()) {
                     gameOver = true;
                     saveHighScore();
                     sound.playGameOver();
                 }
             }
-            return;  // Don't process gravity/input while flashing
+            return; // No input or gravity during ARE
         }
-
         long now = System.currentTimeMillis();
-        fallAccumulator += now - lastUpdateTime;
-        lastUpdateTime = now;
+        boolean downNow = keyHandler.isDownPressed();
+        if (downNow && !wasDownPressed) {
+            // Started soft-drop this frame: reset accumulator to avoid "burst" drops
+            fallAccumulator = 0;
+            lastUpdateTime = now;
+        } else {
+            fallAccumulator += now - lastUpdateTime;
+            lastUpdateTime = now;
+        }
+        wasDownPressed = downNow;
 
         handleInput();
         if (gameOver) {
             return;
         }
 
-        long interval = keyHandler.isDownPressed() ? SOFT_DROP_INTERVAL : getGravityInterval();
+        long baseGravity = getGravityInterval();
+        long interval = keyHandler.isDownPressed()
+            ? Math.round(2 * 1000.0 / 60.0) // fixed 2 frames (~33ms) soft drop per NES
+            : baseGravity;
         while (fallAccumulator >= interval && !gameOver) {
             if (movePiece(0, 1)) {
                 fallAccumulator -= interval;
@@ -152,8 +176,21 @@ public class GameManager {
         if (keyHandler.consumeRotate()) {
             rotatePiece();
         }
+        if (keyHandler.consumeRotateCCW()) {
+            rotatePieceCCW();
+        }
         if (keyHandler.consumeHardDrop()) {
             hardDropPiece();
+        }
+    }
+
+    /** Rotates the current piece counterclockwise and reverts if collides. */
+    private void rotatePieceCCW() {
+        int previousRotation = currentPiece.getRotation();
+        int newRotation = (previousRotation + 3) % 4;
+        currentPiece.setRotation(newRotation);
+        if (!canPlace(currentPiece, pieceX, pieceY, currentPiece.getRotation())) {
+            currentPiece.setRotation(previousRotation);
         }
     }
 
@@ -201,12 +238,8 @@ public class GameManager {
 
         clearLines();
         if (flashingRows.isEmpty()) {
-            // No lines to clear, spawn immediately
-            if (!spawnNextPiece()) {
-                gameOver = true;
-                saveHighScore();
-                sound.playGameOver();
-            }
+            // No lines to clear, start ARE before spawning
+            areCounter = ARE_FRAMES;
         }
         // If flash is active, spawn will happen after flash completes in update()
     }
@@ -297,7 +330,14 @@ public class GameManager {
         if (practiceMode) {
             return BASE_INTERVAL;
         }
-        return Math.max(100L, BASE_INTERVAL - (level - 1L) * 40L);
+        final int[] NES_FRAMES_PER_CELL = {
+            48, 43, 38, 33, 28, 23, 18, 13, 8, 6,
+            5, 5, 5, 4, 4, 4, 3, 3, 3,
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1
+        };
+        int idx = Math.max(0, Math.min(level - 1, NES_FRAMES_PER_CELL.length - 1));
+        double frames = NES_FRAMES_PER_CELL[idx];
+        return Math.round(frames * 1000.0 / 60.0);
     }
 
     /** Returns the current score. */
