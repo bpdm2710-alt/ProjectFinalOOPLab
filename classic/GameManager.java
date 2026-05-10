@@ -9,8 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Random;
 
 /** Stores the board, the falling piece, scoring, and rendering. */
@@ -225,20 +226,22 @@ public class GameManager {
     private void performLineClear() {
         int cleared = flashingRows.size();
         if (cleared > 0) {
-            List<Integer> sorted = new ArrayList<>(flashingRows);
-            Collections.sort(sorted);  // Process low rows first to avoid index corruption
-            int offset = 0;
-            for (int row : sorted) {
-                int target = row + offset;  // Actual row after previous shifts
-                for (int pull = target; pull > 0; pull--) {
-                    for (int col = 0; col < COLS; col++) {
-                        board[col][pull] = board[col][pull - 1];
-                    }
+            Set<Integer> clearedRows = new HashSet<>(flashingRows);
+            int writeRow = ROWS - 1;
+            for (int readRow = ROWS - 1; readRow >= 0; readRow--) {
+                if (clearedRows.contains(readRow)) {
+                    continue;
                 }
                 for (int col = 0; col < COLS; col++) {
-                    board[col][0] = 0;
+                    board[col][writeRow] = board[col][readRow];
                 }
-                offset++;  // Each deletion shifts remaining rows down by 1
+                writeRow--;
+            }
+            while (writeRow >= 0) {
+                for (int col = 0; col < COLS; col++) {
+                    board[col][writeRow] = 0;
+                }
+                writeRow--;
             }
             lines += cleared;
             score += scoringStrategy.calculate(cleared, level);
@@ -246,6 +249,7 @@ public class GameManager {
             sound.playLineClear();
             if (score > highScore) {
                 highScore = score;
+                saveHighScore();
             }
             notifyScoreListeners();
         }
@@ -454,12 +458,8 @@ public class GameManager {
         }
     }
 
-    /** Saves the current score if it beats the stored high score. */
+    /** Saves the current high score to disk. */
     private void saveHighScore() {
-        if (score <= highScore) {
-            return;
-        }
-        highScore = score;
         try {
             Files.writeString(HIGH_SCORE_FILE, String.valueOf(highScore), StandardCharsets.UTF_8);
         } catch (IOException exception) {
