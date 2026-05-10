@@ -3,6 +3,8 @@ package classic;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -19,6 +21,7 @@ public class GamePanel extends JPanel implements Runnable, ScoreListener {
     private final KeyHandler keyHandler = new KeyHandler();
     private volatile boolean running;
     private volatile Thread gameThread;
+    private boolean paused;
     private CardLayout cardLayout;
     private JPanel mainContainer;
 
@@ -42,6 +45,7 @@ public class GamePanel extends JPanel implements Runnable, ScoreListener {
     public void startGame(boolean practiceMode) {
         gameManager.reset(practiceMode);
         keyHandler.resetTransientInput();
+        paused = false;
         music.playBgm();
         if (!running) {
             running = true;
@@ -60,6 +64,7 @@ public class GamePanel extends JPanel implements Runnable, ScoreListener {
     public void returnToMenu() {
         running = false;
         gameThread = null;
+        paused = false;
         music.stopBgm();
         keyHandler.resetTransientInput();
         if (cardLayout != null && mainContainer != null) {
@@ -71,6 +76,17 @@ public class GamePanel extends JPanel implements Runnable, ScoreListener {
     private void update() {
         if (keyHandler.consumeMenu()) {
             returnToMenu();
+            return;
+        }
+
+        if (keyHandler.consumePause() && !gameManager.isGameOver()) {
+            paused = !paused;
+            if (!paused) {
+                gameManager.refreshTiming();
+            }
+        }
+
+        if (paused) {
             return;
         }
 
@@ -93,6 +109,23 @@ public class GamePanel extends JPanel implements Runnable, ScoreListener {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         gameManager.draw(g2);
+        if (paused && !gameManager.isGameOver()) {
+            drawPauseOverlay(g2);
+        }
+    }
+
+    /** Draws a pause overlay over the playfield. */
+    private void drawPauseOverlay(Graphics2D g2) {
+        g2.setColor(new Color(0, 0, 0, 150));
+        g2.fillRect(0, 0, WIDTH, HEIGHT);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("SansSerif", Font.BOLD, 42));
+        FontMetrics metrics = g2.getFontMetrics();
+        String text = "PAUSED";
+        g2.drawString(text, (WIDTH - metrics.stringWidth(text)) / 2, HEIGHT / 2 - 8);
+        g2.setFont(new Font("SansSerif", Font.PLAIN, 18));
+        String hint = "Press P to resume";
+        g2.drawString(hint, (WIDTH - g2.getFontMetrics().stringWidth(hint)) / 2, HEIGHT / 2 + 24);
     }
 
     /** Runs the frame loop at roughly 60 FPS. */

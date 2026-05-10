@@ -13,6 +13,7 @@ public class KeyHandler implements KeyListener {
     private final AtomicBoolean hardDropPressed = new AtomicBoolean(false);
     private final AtomicBoolean restartPressed = new AtomicBoolean(false);
     private final AtomicBoolean menuPressed = new AtomicBoolean(false);
+    private final AtomicBoolean pausePressed = new AtomicBoolean(false);
 
     /** Returns whether the soft-drop key is held. */
     public boolean isDownPressed() {
@@ -49,6 +50,11 @@ public class KeyHandler implements KeyListener {
         return menuPressed.getAndSet(false);
     }
 
+    /** Consumes a pause toggle request. */
+    public boolean consumePause() {
+        return pausePressed.getAndSet(false);
+    }
+
     /** Clears all transient input flags. */
     public void resetTransientInput() {
         leftPressed.set(false);
@@ -58,6 +64,7 @@ public class KeyHandler implements KeyListener {
         hardDropPressed.set(false);
         restartPressed.set(false);
         menuPressed.set(false);
+        pausePressed.set(false);
     }
 
     /** Unused by this game. */
@@ -81,6 +88,8 @@ public class KeyHandler implements KeyListener {
             hardDropPressed.set(true);
         } else if (code == KeyEvent.VK_R) {
             restartPressed.set(true);
+        } else if (code == KeyEvent.VK_P) {
+            pausePressed.set(true);
         } else if (code == KeyEvent.VK_ESCAPE) {
             menuPressed.set(true);
         }
@@ -98,6 +107,8 @@ public class KeyHandler implements KeyListener {
             downPressed.set(false);
         } else if (code == KeyEvent.VK_ESCAPE) {
             menuPressed.set(false);
+        } else if (code == KeyEvent.VK_P) {
+            pausePressed.set(false);
         }
     }
 }

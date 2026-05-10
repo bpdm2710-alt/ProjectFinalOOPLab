@@ -90,6 +90,12 @@ public class GameManager {
         }
     }
 
+    /** Refreshes timing after a pause or flash so gravity does not jump. */
+    public void refreshTiming() {
+        fallAccumulator = 0;
+        lastUpdateTime = System.currentTimeMillis();
+    }
+
     /** Updates input, gravity, and piece locking. */
     public void update() {
         if (gameOver) {
@@ -103,6 +109,8 @@ public class GameManager {
                 performLineClear();
                 flashingRows.clear();
                 flashCounter = 0;
+                lastUpdateTime = System.currentTimeMillis();
+                fallAccumulator = 0;
                 // After flash completes, spawn next piece
                 if (!spawnNextPiece()) {
                     gameOver = true;
